@@ -1,0 +1,67 @@
+{%extends 'order_tracker_template.html' %}
+{% block title %}<title>Manage Users</title>{%endblock%}
+
+{%block content%}
+
+<script type="text/javascript">
+function validateForm() {
+  var x = document.forms["new_user"]["user_role"].value;
+  if (x == "") {
+    alert("Please select a user role.");
+    return false;
+  }
+}
+</script>
+<div class="wrapper">
+    <div class="errors">
+        {% if messages %}
+        <ul>
+            {% for message in messages%}
+            <li>{{message}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    <div class="main">
+        <h2>Add User</h2>
+
+        <form action="reg_user" name="new_user" id="new_user" method="POST" autocomplete="off" onsubmit="return validateForm()">
+            {% csrf_token %}
+            <p>First Name:</p>
+            <input type="text" name="first_name">
+            <p>Last Name:</p>
+            <input type="text" name="last_name" >
+            <p>Email:</p>
+            <input type="email" name="email" >
+            <p>Password:</p>
+            <input type="password" name="password" autocomplete="new-password">
+            <p>Confirm Password:</p>
+            <input type="password" name="c_password" autocomplete="new-password">
+            <p>User Role: 
+            <select name="user_role">
+                <option value="" selected>Select Role</option>
+                <option value="admin">Admin</option>
+                <option value="regular">Regular</option>
+                <option value="sales">Sales</option>
+            </select></p>
+            <br>
+            <button type="submit">Submit</button>
+        </form>
+
+    </div>
+    <div class="sidebar">
+        <h2>Existing Users</h2>
+        <table>
+            <th>Name</th>
+            <th>Actions</th>
+            {% for u in users %}
+                <tr>
+                    <td>{{u.full_name}}, {{u.role}}</td>
+                    <td><a href="edit_user/{{u.id}}"><button>Edit</button></a></td>
+                </tr>
+            {%endfor%}
+        </table>
+    </div>
+
+</div>
+{%endblock%}

@@ -1,0 +1,67 @@
+{%extends "order_tracker_template.html"%}
+{%block title%}<title>{{status}} Orders</title>{%endblock%}
+
+{%block content%}
+    <h2>{{status}} Orders</h2>
+
+{%if orders != None %}
+    <div class="searchResults">
+        <table>
+            <th>Order Date</th>
+            <th>Fee</th>
+            <th>Tech Fee</th>
+            <th>Address</th>
+            <th>Client</th>
+            <th>Product</th>
+            <th>Appraiser</th>
+            <th>Due Date</th>
+            <th class="align-center">Status</th>
+            <th>Actions</th>
+            {% for result in orders %}
+                
+                <tr>
+                    <td>{{result.created_at|date:"m/d/y"}}</td>
+                    <td>{{result.fee}}</td>
+                    <td>{{result.tech_fee}}</td>
+                    <td><a href="order_edit/{{result.id}}"> {{result.address}} </a></td>
+                    <td>{{result.client_ordered}}</td>
+                    <td>{{result.product_type}}</td>
+                    <td>{{result.assigned_appraiser}}</td>
+                    <td>{{result.due_date|date:"m/d/y"}}</td>
+                    <td class="align-right"><span>{{result.status}}</span>
+                        
+                            <form id="update_status" name="update_status" action="update_status/{{result.id}}" method="post">
+                                {% csrf_token%}
+                                <input type="hidden" name="orderID" value="{{result.id}}">
+                                <select name="updatedStatus" id-"updatedStatus" class="statusSelect">
+                                    <option disabled selected>Choose Status</option>
+                                    {% for status in statusList %}
+                                        {%if status != "Completed" %}
+                                        <option value="{{status}}">{{status}}</option>
+                                        {%endif%}
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="orderAction" id="updateButton">Update</button>
+                            </form>
+                        
+                    </td>
+                    <td>
+                        
+                        <a href="order_edit/{{result.id}}"><button class="orderAction" id="editButton">Edit</button></a>
+                        <a href="complete_order/{{result.id}}"><button class="orderAction">Complete</button></a>
+                        {% if result.status == "Add Order"%}
+                            <span class="errors">**Add</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                
+
+            {% endfor %}
+        </table>
+    </div>
+    {% else %}
+        <p class="errors">{{error}}</p>
+    {%endif%}
+            
+
+{%endblock%}
