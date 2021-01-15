@@ -90,17 +90,11 @@ class OrderManager(models.Manager):
         if product == False:
             errors_list.append('Please enter a valid form type.')
 
-            
         if len(errors_list) == 0:
-            if postData['tech_fee'] == "":
-                fee_split = float(float(postData['fee'])*.6)
-                t_fee=0
-            else:
-                fee_split= float(float(postData['fee']) - float(postData['tech_fee']) *.6)
-                t_fee=float(postData['tech_fee'])
+            fee_split= float(float(postData['fee']) - float(postData['tech_fee']) *.6)
             new_order= self.create(
                 fee = postData['fee'],
-                tech_fee=t_fee,
+                tech_fee=postData['tech_fee'],
                 app_fee_split= fee_split,
                 address= postData['address'],
                 status = 'Add Order',

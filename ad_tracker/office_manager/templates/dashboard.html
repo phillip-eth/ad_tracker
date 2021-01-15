@@ -64,11 +64,9 @@
                 <h2>Add New Order</h2>
                 <form action="add_order" method="post">
                     {% csrf_token %}
-                    
-                    <input type="hidden" name="user_id" value="{{request.session.user_id}}">
-                    <input type="floatformat" name="fee" id="newFee"  placeholder="Fee">
-                    
-                    <input type="floatformat" name="tech_fee" id="newTechFee"  placeholder="Tech Fee">
+                     <input type="hidden" name="user_id" value="{{request.session.user_id}}">
+                    <input type="floatformat" name="fee" id="newFee" value=0>
+                    <input type="floatformat" name="tech_fee" id="newTechFee" value=0>
                     <input type="text" name="address" id="newAddress" placeholder="Property Address">
                     <select name="product_type" placeholder="Select Product">
                     <option value="" disabled selected>Select Product</option>

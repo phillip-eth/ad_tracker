@@ -1,0 +1,159 @@
+{%extends "order_tracker_template.html"%}
+{%block title%}<title>Payroll Report for {{thisMonth}} {{thisYear}}</title>{%endblock%}
+
+{%block content%}
+    <div class="main">
+        <h2> Payroll Report for  - {{appr.name}} / {{thisMonth}}, {{thisYear}}</h2>
+        <div class="payroll_stats">
+            <h3>Appraiser Monthly Performance</h3>
+            <table>
+                
+                <tr>
+                    <td class="statlead">Orders Completed:  </td>
+                    <td>{{completed_count}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Average Fee:  </td>
+                    <td>$ {{avg_fee}}</td>
+                </tr>
+                
+                
+            </table>
+
+        </div>
+        <div class="payroll_stats">
+            <h3>1st Period Breakdown</h3>
+            <table>
+                <tr>
+                    <td class="statlead">Total Fee Split</td>
+                    <td>$ {{first_billed}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Gas Allowance:</td>
+                    <td>$ 200.00</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Health Contribution:</td>
+                    <td>$ 175.00</td>
+                </tr>
+                <tr>
+                    <td class="statlead total">Total Pay:</td>
+                    <td class="total">$ {{first_total_pay}}</td>
+                </tr>
+            </table>
+                {% if first_total_pay < 4541 %}
+                    <p class ="red">Basepay rate not exceeded. Basepay amount of $4,541.67 paid.</p>
+                {%endif%}
+        </div>
+        <div class="payroll_stats">
+            <h3>2nd Period Breakdown</h3>
+            <table>
+                <tr>
+                    <td class="statlead">Total Fee Split</td>
+                    <td>$ {{second_billed}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Gas Allowance:</td>
+                    <td>$ 200.00</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Health Contribution:</td>
+                    <td>$ 175.00</td>
+                </tr>
+                <tr class="total">
+                    <td class="statlead total">Total Pay:</td>
+                    <td class="total">$ {{second_total_pay}}</td>
+                </tr>
+            </table>
+                {% if second_total_pay < 4541 %}
+                    <p class ="red">Basepay rate not exceeded. Basepay amount of $4,541.67 paid.</p>
+                {%endif%}
+
+        </div>
+        <div class="toptobottom">
+            <h2>1st Pay Period Activity</h2>
+            <table class="payroll_display">
+                <th>Order Date</th>
+                <th>60% Fee Split</th>
+                <th>Address</th>
+                <th>Client</th>
+                <th>Product</th>
+                <th>Appraiser</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                
+                {% for thisOrder in first_period%}
+                   
+                    <tr>
+                        <td>{{thisOrder.created_at|date:"m/d/y"}}</td>
+                        <td>{{thisOrder.app_fee_split}}</td>
+                        <td><a href="order_edit/{{thisOrder.id}}"> {{thisOrder.address}} </a></td>
+                        <td>{{thisOrder.client_ordered}}</td>
+                        <td>{{thisOrder.product_type}}</td>
+                        <td>{{thisOrder.assigned_appraiser}}</td>
+                        <td> <span>{{thisOrder.status}}</span>
+                        <td>{{thisOrder.due_date|date:"m/d/y"}}</td>
+                        
+                    </tr>
+                    
+                {% endfor %}
+            </table>
+            
+        </div>
+        <div class="toptobottom">
+            <h2>2nd Pay Period Activity</h2>
+            <table class="payroll_display">
+                <th>Order Date</th>
+                <th>60% Fee Split</th>
+                <th>Address</th>
+                <th>Client</th>
+                <th>Product</th>
+                <th>Appraiser</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                
+                {% for thisOrder in second_period%}
+                   
+                    <tr>
+                        <td>{{thisOrder.created_at|date:"m/d/y"}}</td>
+                        <td>{{thisOrder.app_fee_split}}</td>
+                        <td><a href="../order_edit/{{thisOrder.id}}"> {{thisOrder.address}} </a></td>
+                        <td>{{thisOrder.client_ordered}}</td>
+                        <td>{{thisOrder.product_type}}</td>
+                        <td>{{thisOrder.assigned_appraiser}}</td>
+                        <td> <span>{{thisOrder.status}}</span>
+                        <td>{{thisOrder.due_date|date:"m/d/y"}}</td>
+                        
+                    </tr>
+                    
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <div class="sidebar">
+        <h2>Client Activity</h2>
+        <table>
+            <th>Client Name </th>
+            <th class="align-center">Num Orders</th>
+
+            {% for c in client_list %}
+                <tr>
+                    <td>{{c}}</td>
+                    {%if c in client_list%}
+                        {%for key, value in client_list.items %}
+                            {% if key == c %}
+                            <td class="blue align-center">{{value}}</td>
+                            {%endif%}
+                        {%endfor%}
+                
+                    {%endif%}
+                </tr>
+            {%endfor %}
+
+
+        </table>
+    </div>
+
+            
+
+{%endblock%}

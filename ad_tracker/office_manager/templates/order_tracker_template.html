@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% load static %}
+    <link rel="stylesheet" href="{% static './css/style.css' %}">
+
+    <link href="https://fonts.googleapis.com/css?family=Rubik&display=swap" rel="stylesheet">
+    {% block title %}<title>Appraisal Den Order Tracker</title>{%endblock%}
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <img src= "{% static './img/Appraisal-Den-Logos-1.png' %}" alt="Appraisal Den Logo" id="logo">
+            <div class="sideheader">
+                <h2 id="site_title">Welcome Back, {{ request.session.username }} </h2>
+                <a id="logout" href="{% url 'logout' %}">Log Out</a>
+        
+            </div>
+        </div>
+        <div class="navbar">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <div class="dropdown">
+                <button class="dropbtn">Orders By Status 
+                <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="dropdown-content">
+                    <a href="{% url 'orders_assigned' %}">Assigned</a>
+                    <a href="{% url 'orders_hold' %}">On Hold</a>
+                    <a href="{% url 'order_info_requested' %}">Info Requested</a>
+                    <a href="{% url 'completed' %}">Completed</a>
+                    <a href="{% url 'cancelled' %}">Cancelled</a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button class="dropbtn">Manage  
+                <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="dropdown-content">
+                    <a href="{% url 'manage_masters' %}">Master Lists</a>
+                    {%if request.session.user_role == "admin"%}
+                        <a href="{% url 'manage_users' %}">Users</a>
+                    {%endif%}
+                </div>
+            </div> 
+            {%if request.session.user_role == "admin"%}
+                <a href="{% url 'sales' %}">Sales Report</a>
+                <a href="{% url 'payroll' %}">Payroll Reports</a>
+                
+            {%endif%}
+            {%if request.session.user_role == "sales"%}
+                <a href="{% url 'sales' %}">Sales Report</a>
+                                
+            {%endif%}
+        </div>
+        <div class="display">
+            {% block content %}<!-- default content text -->{% endblock %}
+
+        </div>
+        <script type="text/javascript">
+            
+        </script>
+        
+        
+    </div>
+</body>
+</html>
