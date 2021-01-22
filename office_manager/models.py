@@ -2,8 +2,10 @@ from __future__ import unicode_literals
 from django.db import models
 import re
 import bcrypt
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 import calendar
+from django.utils.dateparse import parse_date
+
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
 
 def num_work_days(month,year):
@@ -93,10 +95,10 @@ class OrderManager(models.Manager):
             
         if len(errors_list) == 0:
             if postData['tech_fee'] == "":
-                fee_split = float(float(postData['fee'])*.6)
+                fee_split = float(float(postData['fee'])*appraiser.fee_split_rate)
                 t_fee=0
             else:
-                fee_split= float(float(postData['fee']) - float(postData['tech_fee']) *.6)
+                fee_split= float(float(postData['fee']) - float(postData['tech_fee']) *appraiser.fee_split_rate)
                 t_fee=float(postData['tech_fee'])
             new_order= self.create(
                 fee = postData['fee'],
@@ -151,20 +153,38 @@ class ClientManager(models.Manager):
 
 class AppraiserManager(models.Manager):
     def validation(self, postData):
-        
+        full_name= postData['f_name']+" "+postData['l_name']
         errors_list=[]
-        if len(Appraiser.objects.filter(name = postData['appraiser_name'])) > 0:
+        if len(Appraiser.objects.filter(name = full_name)) > 0:
             errors_list.append('That appraiser already exists.')
-        if len(postData['appraiser_name']) < 3:
+        if len(full_name) < 3:
             errors_list.append('The appraiser name must be at least 3 characters long.')
         if len(postData['capacity']) ==0 :
             errors_list.append('Please enter the appraiser capacity.')
+        if postData['fee_split']=="" :
+            errors_list.append('Please enter the appraiser fee split.')
+        if postData['license_exp'] == "":
+            errors_list.append('Please enter a license expiration date in the future.')
+            return (False, errors_list)
+        elif parse_date(postData['license_exp']) <= date.today():
+            errors_list.append('Please enter a license expiration date in the future.')
+        if postData['insurance_exp'] != "" :
+            errors_list.append('Please enter an insurance expiration date in the future.')
+            return (False, errors_list)
+        elif parse_date(postData['insurance_exp']) <= date.today() :
+            errors_list.append('Please enter an insurance expiration date in the future.')
         
         if len(errors_list) == 0:
             
             new_appraiser= self.create(
-                name = postData['appraiser_name'],
-                capacity=postData['capacity']
+                name = full_name,
+                f_name=postData['f_name'],
+                l_name= postData['l_name'],
+                capacity=postData['capacity'],
+                fee_split_rate= float(postData['fee_split']) /100,
+                license_exp=postData['license_exp'],
+                insurance_exp=postData['insurance_exp'],
+            
             )
             return (True, new_appraiser)
         else:
@@ -225,7 +245,15 @@ class User(models.Model):
 
 class Appraiser(models.Model):
     name = models.CharField(max_length = 255)
+    f_name=models.CharField(max_length = 255, blank=True)
+    l_name=models.CharField(max_length = 255, blank=True)
     capacity=models.IntegerField(blank= True, default=2)
+    fee_split_rate=models.FloatField(blank=False, default =0.6)
+    status = models.CharField(max_length = 15, default="Active")
+    license_exp =models.DateTimeField(blank=True, default= datetime.now())
+    insurance_exp=models.DateTimeField(blank=True, default= datetime.now())
+    insurance_flag=models.BooleanField(default=False)
+    license_flag=models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -240,8 +268,12 @@ class Appraiser(models.Model):
         self.my_field_name = self.name
         return self.my_field_name
 
+    def display_rate(self):
+        return self.fee_split_rate*100
+
 class Client(models.Model):
     name = models.CharField(max_length = 255)
+    last_ordered = models.DateTimeField(blank=True, default= datetime.now())
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -280,16 +312,13 @@ class Order(models.Model):
     address= models.CharField(max_length = 255)
     notes= []
     due_date = models.DateTimeField(auto_now=False)
+    completed_date =models.DateTimeField(auto_now=False, blank=True, null=True)
 
     objects=OrderManager()
 
     Progress_Status= ["Add Order","Assigned","On Hold","Info Requested","Cancelled","Completed"]
 
-    status= models.CharField(
-        max_length=25,
-        blank=False,
-        default = 'Add Order'
-    )    
+    status= models.CharField(max_length=25, blank=False, default = 'Add Order')    
 
 
     assigned_appraiser= models.ForeignKey(Appraiser, on_delete=models.SET_NULL, null=True, related_name ="assigned_orders")

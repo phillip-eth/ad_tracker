@@ -1,0 +1,69 @@
+{%extends 'order_tracker_template.html' %}
+{% block title %}<title>Appraiser Detail</title>{%endblock%}
+
+{%block content%}
+
+    <div class="errors">
+        {% if messages %}
+        <ul>
+            {% for message in messages%}
+            <li>{{message}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    <div class="main">
+        <h2>Details for {{appraiser.name}}</h2>
+        <form action="../process_edit_appraiser/{{appraiser.id}}" class="user_display" id="user_update" name="user_update" method="post" autocomplete="off">
+        {%csrf_token%}
+            <table class="order_detail">
+                <tr>
+                    <td>First Name: </td><td><input type="text" name="f_name" value="{{appraiser.f_name}}"></td>
+                </tr>
+                <tr>
+                    <td>Last Name: </td><td><input type="text" name="l_name" value="{{appraiser.l_name}}"></td>
+                </tr>
+                <tr>
+                    <td>Capacity: </td><td><input type="number" name="appraiser_capacity" value="{{appraiser.capacity}}"autocomplete="off"></td>
+                </tr>
+                <tr>
+                    <td>Fee Split %: </td><td><input type="number" name="fee_split_rate" value="{{appraiser.display_rate}}" autocomplete="off"></td>
+                </tr>
+                <tr>
+                    <td>License Expiration: {{appraiser.license_exp|date:"m/d/y"}}</td><td><input type="date" name="license_exp" autocomplete="off"></td>
+                </tr>
+                <tr>
+                    <td>Insurance Expiration: {{appraiser.insurance_exp|date:"m/d/y"}}</td><td><input type="date" name="insurance_exp" autocomplete="off"></td>
+                </tr>
+                <tr>
+                    <td>Appraiser Status: {{appraiser.status}}</td>
+                    <td>
+                        <select name="appraiser_status">
+                            <option value="" selected>Select Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><button type="submit">Submit Edits</button></td>
+                </tr>
+            </table>
+
+        </form>
+    </div>
+    <div class="sidebar">
+        <a href="{% url 'manage_appraisers'%}">Cancel and Go Back</a>
+        <br>
+        <br>
+        {%if request.session.user_role == "admin"%}
+            <h2>Delete Appraiser</h2>
+            <h3>Caution, this cannot be undone!</h3>
+            <a href="../delete_appraiser/{{appraiser.id}}"><button class="delete" onclick="return confirm('Are you sure you want to delete this appraiser?');">Delete Appraiser</button></a>
+        {%endif%}
+    </div>
+
+
+
+
+{%endblock%}

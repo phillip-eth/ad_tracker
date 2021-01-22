@@ -1,0 +1,67 @@
+{%extends "order_tracker_template.html"%}
+{%block title%}<title>Sales Report for {{client.name}} {{thisMonth}} {{thisYear}}</title>{%endblock%}
+
+{%block content%}
+    <div class="display">
+        <h2 class="align-center"> Sales Report for: {{client.name}} {{thisMonth}}, {{thisYear}}</h2>
+        <div class="align-center"><a href="javascript:history.back()">Back to Company Sales Report</a></div>
+    
+        <div class="stats">
+            <table>
+                <tr>
+                    <td class="statlead">Orders Completed:  </td>
+                    <td>{{completed_count}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Total Billed:  </td>
+                    <td>$ {{billed}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Tech Fees:  </td>
+                    <td>$ {{tech_fees}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Net Revenue:  </td>
+                    <td>$ {{net_rev}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Average Fee:  </td>
+                    <td>$ {{avg_fee}}</td>
+                </tr>
+                
+            </table>
+
+        </div>
+        
+        <div class="toptobottom">
+            <h2>Client Activity By Appraiser</h2>
+            <table class="sales-table">
+                    <th>Appraiser Name </th>
+                    <th>Num Orders</th>
+
+                    {% for c in appraisers %}
+                        <tr>
+                            <td>{{c}}</td>
+                            {%if c in appraisers%}
+                            {%for key, value in appraisers.items %}
+                                {% if key == c %}
+                                    {% if value < 1 %}
+                                        <td class="red">{{value}}</td>
+                                    {%else%}
+                                        <td class="blue">{{value}}</td>
+                                    {%endif%}
+                                {%endif%}
+                            {%endfor%}
+                        
+                        {%endif%}
+                        </tr>
+                    {%endfor %}
+
+
+            </table>
+        </div>
+    </div>
+
+            
+
+{%endblock%}

@@ -10,12 +10,6 @@
     padding: 0;
     
     }
-
-    /* .navbutton{
-        text-decoration: none;
-        color: white;
-        
-    } */
     
     .wrapper {
         text-align: center;
@@ -25,96 +19,19 @@
         
         
     }
-    .navbar {
-        overflow: hidden;
-        background-color: #333;
-    }
     
-    .navbar a {
-    float: left;
-    font-size: 16px;
-    color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-    }
-    
-    .dropdown {
-    float: left;
-    overflow: hidden;
-    }
-    
-    .dropdown .dropbtn {
-    font-size: 16px;  
-    border: none;
-    outline: none;
-    color: white;
-    padding: 14px 16px;
-    background-color: inherit;
-    font-family: inherit;
-    margin: 0;
-    }
-    
-    .navbar a:hover, .dropdown:hover .dropbtn {
-    background-color: red;
-    }
-    
-    .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-    }
-    
-    .dropdown-content a {
-    float: none;
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    text-align: left;
-    }
-    #dash-stats{
-        margin-bottom: -90px;
-    }
-    .dropdown-content a:hover {
-    background-color: #ddd;
-    }
-    
-    .dropdown:hover .dropdown-content {
-    display: block;
-    }
     .sidebyside{
         display: inline-block;
-        /* border: 2px dotted gray;
-        border-radius: 5px; */
+        border: 2px dotted gray;
+        border-radius: 5px;
         padding: 10px 10px;
         margin: 10px;
         width: 29%;
         text-align: left;
         vertical-align: top;
     }
-    .width-40p{
-        width: 40px;
-    }
-    .search{
-        text-align: right;
-        display: block;
-        /* float: right; */
-        
-    }
-    .search input{
-        display: inline-block;
-        width: 385px;
-        background-color: rgb(243, 240, 247);
-        border-color: black;
-        height: 19px;
-    }
-    .search h2{
-        margin: 20px 0px -20px;
-    }
+   
+    
     .stats{
         display: inline-block;
     }
@@ -126,76 +43,10 @@
     .statlead{
         color: rgb(27, 9, 107);
         font-weight: bold;
-        padding-right: 30px;
-    }
-    .statSecond{
-        color: rgb(27, 9, 107);
-        font-weight: bold;
-        padding-right: 30px;
-        padding-left: 30px;
-    }
-    .addOrder{
-        display: block;
-        font-size: 13px;
-        border-bottom: 1px dotted black;
-        border-top: 1px dotted black;
-    }
-    .addOrder input{
-        display: inline-block;
-        width: 120px;
-        background-color: rgb(243, 240, 247);
-        border-color: black;
-        /* padding: 7px 3px; */
-        height: 19px;
-
-    }
-    .addOrder select{
-        /* width: 180px; */
-        border: 1px solid black;
-        padding: 6px 0px;
-        background-color: rgb(243, 240, 247);
-    }
-    .addOrder button{
-        background-color: rgb(33, 134, 33);
-        margin-left: 17px;
-        
-    }
-    #newAddress{
-        width: 300px;
-    }
-    #newFee{
-        width: 40px;
-    }
-    #newTechFee{
-        width: 40px;
-    }
-    #dueDate{
-        width: 135px;
-    }
-    .orderAction{
-        padding: 5px 5px;
-        background-color: rgb(5, 42, 97);
+        padding-right: 5px;
     }
     
-    #editButton{
-        background-color: rgb(131, 13, 9);
-        margin-right: 5px;
-    }
-    #updateButton{
-        background-color: rgb(18, 163, 5);
-        /* margin-right: -5px; */
-    }
-    .green_button{
-        background-color:rgb(18, 163, 5);
-    }
-    .reduce_btm_margin{
-        margin-bottom: 0px;
-    }
-    .display{
-        text-align: left;
-        width: 100%;
-        
-    }
+  
     .header{
         text-align: left;
         vertical-align: bottom;
@@ -213,11 +64,12 @@
         margin-right: 90px;
     }
     .main{
-        width: 70%;
+        width: 900 px;
         /* padding: 0em 1em; */
         /* padding-right: 2em; */
-        text-align: left;
-        display: inline-block;
+        text-align: center;
+        margin:auto;
+        
     }
     #notes{
         width: 15px;
@@ -233,10 +85,6 @@
         display: inline-block;
         text-align: right;
         
-    }
-    .sales-table td {
-        border-top: 1px dotted rgb(209, 207, 212);
-        font-size: 14px;
     }
     .statusSelect{
         margin-right: 5px;
@@ -260,29 +108,13 @@
     .align-right{
         text-align: right;
     }
-    .align-center{
-        text-align: center;
-    }
     .align-left{
         text-align: left;
     }
-    .border-right{
-        border-right: 1px solid rgb(226, 219, 219);
+    .align-center{
+        text-align: center;
     }
-    #logout{
-        
-         display: block;
-         margin: -5px;
-         padding: 0px;
-         font-size: 15px;
-    }
-    #site_title{
-        text-align: left;
-        font-size: 20px;
-        /* margin-left: 15px;
-        margin-right:30px; */
-        color:rgb(51, 53, 52);
-        display: inline-block;
+    
     }
     .errors{
         color: red;
@@ -343,7 +175,8 @@
     
     h2{
         font-weight: bold;
-        font-size: 25px;
+        font-size: 20px;
+        margin-bottom: 5px;
     }
     
     h3{
@@ -374,16 +207,16 @@
         color: rgb(204, 4, 4);
     }
     .payroll_display th{
-        font-size: 14px;
+        font-size: 13px;
         font-weight: bold;
     }
     .payroll_display td{
-        font-size: 13px;
+        font-size: 12px;
     }
     .payroll_stats{
         display: inline-block;
-        width: 260px;
-        margin-right: 30px;
+        width: 220px;
+        margin-right: 10px;
         vertical-align: top;
     }
     .payroll_stats th, td{
@@ -391,6 +224,7 @@
     }
     .payroll_stats h3{
         border-bottom: 2px solid black;
+        font-size: ;
     }
     .payroll_stats p{
         font-size: 13px;
@@ -404,6 +238,4 @@
         width: 95px;
     }
 
-    #print-button{
-        width: 45px;
-    }
+    

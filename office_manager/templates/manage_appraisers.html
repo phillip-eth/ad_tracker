@@ -1,0 +1,63 @@
+{%extends 'order_tracker_template.html' %}
+{% block title %}<title>Manage Appraisers</title>{%endblock%}
+
+{%block content%}
+<div class="wrapper">
+    <div class="errors">
+        {% if messages %}
+        <ul>
+            {% for message in messages%}
+            <li>{{message}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+
+    <div class="main">
+        <h2>Add A New Appraiser</h2>
+        <form action="new_appraiser" method="post" name="new_appraiser">
+        {%csrf_token%}
+            <table>
+                <tr>
+                    <td>First Name: </td><td><input type="text" name="f_name"></td>
+                </tr>
+                <tr>
+                    <td>Last Name: </td><td><input type="text" name="l_name"></td>
+                </tr>
+                <tr>
+                    <td>Capacity: </td><td><input type="number" name="capacity" autocomplete="off"></td>
+                </tr>
+                <tr>
+                    <td>Fee Split %: </td><td><input type="number" name="fee_split" value=60></td>
+                </tr>
+                <tr>
+                    <td>License Expiration: </td><td><input type="date" name="license_exp" autocomplete="off"></td>
+                </tr>
+                <tr>
+                    <td>Insurance Expiration: </td><td><input type="date" name="insurance_exp" autocomplete="off"></td>
+                </tr>
+                <tr>
+                    <td></td><td><button type="submit">Add</button></td>
+                </tr>
+            </table>
+
+            
+        </form>
+    
+    </div>
+    
+    <div class="sidebar">
+        <h2>Appraiser List</h2>
+        <table>
+            {%for a in appraisers %}
+                {%if a.status != "Active" %}
+                    <tr class="errors"><td><a href="./edit_appraiser/{{a.id}}">{{a.name}}</a></td><td>{{a.status}}</td></tr>
+                {%else%}
+                    <tr><td><a href="./edit_appraiser/{{a.id}}">{{a.name}}</a></td><td>{{a.status}}</td></tr>
+                {%endif%}
+            {%endfor%}
+        </table>
+    </div>
+    
+</div>
+{%endblock%}

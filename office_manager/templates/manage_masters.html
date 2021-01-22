@@ -12,7 +12,7 @@
         </ul>
         {% endif %}
     </div>
-    <div class="sidebyside">
+    <div class="sidebyside border-right">
         <h2>Manage Clients</h2>
         <form action="new_client" method="post" name="new_client">
         {%csrf_token%}
@@ -32,37 +32,7 @@
             {%endfor%}
         </table>
     </div>
-    <div class="sidebyside">
-        <h2>Manage Appraisers</h2>
-        <form action="new_appraiser" method="post" name="new_appraiser">
-        {%csrf_token%}
-            <input type="text" name="appraiser_name" placeholder="Enter Appraiser Name">
-            <input type="number" name="capacity" value="2">
-            <button type="submit">Add</button>
-        </form>
-        
-        <table>
-            <th>Name</th>
-            <th class="align-center">Capacity</th>
-            <th>Actions</th>
-            {%for c in appraisers %}
-                <tr>
-                    <td>{{c.name}}</td>
-                    <td class="align-right">
-                        <form action="update_appraiser_capacity/{{c.id}}" method="post">
-                            {%csrf_token%}
-                            <input class="width-40p" type="number" name="appraiser_capacity" value="{{c.capacity}}">
-                            <button type="submit">Update</button>
-
-                        </form>
-                    </td>
-                    {%if request.session.user_role == "admin"%}
-                    <td><a href="delete_appraiser/{{c.id}}"><button class="delete">Delete</button></a></td>
-                    {%endif%}
-                </tr>
-            {%endfor%}
-        </table>
-    </div>
+    
     <div class="sidebyside">
         <h2>Manage Products</h2>
         <form action="new_product" method="post" name="new_product">

@@ -1,11 +1,13 @@
+
 from re import search
 from django.shortcuts import render, redirect
 from . models import *
 from django.contrib import messages
 import datetime
 import calendar
-from django.utils import timezone
-from datetime import date
+from django.utils.timezone import make_aware
+from datetime import date, datetime
+from django.utils.dateparse import parse_date
 
 Progress_Status= ["Add Order","Assigned","On Hold","Info Requested","Cancelled","Completed"]
 Months = {
@@ -41,7 +43,7 @@ def search_order(request):
         searchResult=Order.objects.filter(address__icontains=q)
         if len(searchResult)>0: 
 
-            print(searchResult)
+            # print(searchResult)
             context={
                 'orders':searchResult,
                 'statusList':Progress_Status,
@@ -63,6 +65,9 @@ def log_out(request):
 
 def dashboard(request):
     if request.session['user_id'] != None:
+        today=datetime.today()
+        month=datetime.now().month
+        year=datetime.now().year
         orders= Order.objects.exclude(status="Cancelled").exclude(status="Completed")
         totalFee=0
         totalTechFee=0
@@ -71,7 +76,6 @@ def dashboard(request):
             totalTechFee= totalTechFee+x.tech_fee
         subtotalFee=totalFee-totalTechFee
         today=date.today()
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
         todayOrders=Order.objects.filter_by_date_create(today).exclude(status="Cancelled")
         todayTechFee=0
         todayfee=0
@@ -79,7 +83,12 @@ def dashboard(request):
             todayfee = todayfee+o.fee
             todayTechFee = todayTechFee+o.tech_fee
         todaySubTotal=todayfee-todayTechFee
-
+        compOrdersThisMonth= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year)
+        compRevThisMonth=0
+        compTechFeeThisMonth=0
+        for j in compOrdersThisMonth:
+            compRevThisMonth += j.fee
+            compTechFeeThisMonth += j.tech_fee
         completedOrdersToday=Order.objects.filter_by_date_complete(today).filter(status="Completed")
         completedRevenue=0
         completedTechFee=0
@@ -87,11 +96,11 @@ def dashboard(request):
             completedRevenue += i.fee
             completedTechFee += i.tech_fee
         compSubTotal=completedRevenue -  completedTechFee
-
         if totalFee ==0:
             avg_fee = 0
         else:
             avg_fee= round(subtotalFee/len(orders),2)
+        netCombinedRevenue=(compRevThisMonth-compTechFeeThisMonth)+subtotalFee
         context={
             'subtotalFee':round(subtotalFee,2),
             'compSub':round(compSubTotal,2),
@@ -101,7 +110,9 @@ def dashboard(request):
             'techFees':round(totalTechFee,2),
             'feeAvg':avg_fee,
             'orders':orders,
-            'appraiserList':Appraiser.objects.all().order_by('name'),
+            'numOrdersCompleted':len(compOrdersThisMonth),
+            'combinedRev':netCombinedRevenue,
+            'appraiserList':Appraiser.objects.all().filter(status="Active").order_by('name'),
             'clientList': Client.objects.all().order_by('name'),
             'productList': Product.objects.all().order_by('FNMA_form'),
             'statusList':Progress_Status,
@@ -114,7 +125,7 @@ def dashboard(request):
 def order_edit(request,pk):
     context={
         'thisOrder':Order.objects.get(id=pk),
-        'appraiserList':Appraiser.objects.all(),
+        'appraiserList':Appraiser.objects.all().filter(status="Active").order_by('name'),
         'clientList': Client.objects.all(),
         'productList': Product.objects.all(),
         'statusList':Progress_Status
@@ -164,7 +175,7 @@ def order_edit_process(request,pk):
     
 
 def add_order(request):
-    print(request.POST)
+    # print(request.POST)
     result=Order.objects.validation(request.POST)
     if result[0] == True:
         return redirect("dashboard")
@@ -172,6 +183,7 @@ def add_order(request):
         for error in result[1]:
             messages.error(request,error)
         return redirect("dashboard")
+
 
 def update_status(request,pk):
     
@@ -194,9 +206,104 @@ def delete(request,pk):
     thisOrder.delete()
     return redirect("dashboard")
 
+def manage_appraisers(request):
+    if request.session['user_id'] != None:
+        context={
+            "appraisers":Appraiser.objects.all()
+        }
+        return render(request,'manage_appraisers.html',context)
+
+    else:
+        log_out(request)
+
+def edit_appraiser(request,pk):
+    if request.session['user_id'] != None:
+        context={
+            'appraiser':Appraiser.objects.get(id=pk),
+        }
+        return render(request, 'appraiser_detail.html', context)
+    else:
+        log_out(request)
+
+def process_edit_appraiser(request,pk):
+    if request.session['user_id'] != None:
+        errorslist=[]
+        a=Appraiser.objects.get(id=pk)
+        if request.POST['f_name'] != None:
+            f_name=request.POST['f_name']
+        else: 
+            f_name=a.f_name
+        if request.POST['l_name'] != None:
+            l_name=request.POST['l_name']
+        else: 
+            l_name=a.f_name
+        if float(request.POST['fee_split_rate']) > 65:
+            errorslist.append("The max fee split is 65%.")
+        elif float(request.POST['fee_split_rate']) < 40:
+            errorslist.append("The minimum fee split is 40%")
+        if int(request.POST['appraiser_capacity']) < 2:
+            errorslist.append("The min capacity is 2 per day.")
+
+        if 'license_exp' in request.POST and request.POST['license_exp'] != "":
+            license_e_parse= parse_date(request.POST['license_exp'])
+            if license_e_parse <= date.today():
+                errorslist.append("The license expiration date must be in the future.")
+            else:
+                a.license_exp= request.POST['license_exp']
+
+        if 'insurance_exp' in request.POST and request.POST['insurance_exp'] != "":
+            insurance_e= parse_date(request.POST['insurance_exp'])
+            if insurance_e <= date.today():
+                errorslist.append("The insurance expiration date must be in the future.")
+            else:
+                a.insurance_exp=request.POST['insurance_exp']
+
+        if 'appraiser_status'in request.POST and request.POST["appraiser_status"] != "":
+            a.status=request.POST['appraiser_status']
+
+        if len(errorslist)>0:
+            for error in errorslist:
+                messages.error(request,error)
+            return redirect(f'../edit_appraiser/{pk}')
+        else: 
+            a.f_name=f_name
+            a.l_name=l_name
+            a.name = f_name+' '+l_name
+            a.capacity = int(request.POST['appraiser_capacity'])
+            a.fee_split_rate =float(request.POST['fee_split_rate']) / 100
+            a.save()
+            
+            return redirect('manage_appraisers')      
+            
+    else:
+        log_out(request)
+
+def new_appraiser(request):
+    if request.session['user_id'] != None:
+        # print(request.POST)
+        result=Appraiser.objects.validation(request.POST)
+        if result[0] == True:
+            return redirect("manage_appraisers")
+        else:
+            for error in result[1]:
+                messages.error(request,error)
+            return redirect("manage_appraisers")
+    else:
+        log_out(request)
+
+
+def delete_appraiser(request,pk):
+    if request.session['user_id'] != None:
+        a=Appraiser.objects.get(id=pk)
+        a.delete()
+        return redirect("manage_appraisers")
+    else:
+        log_out(request)
+
 def complete_order(request,pk):
     o=Order.objects.get(id=pk)
     o.status="Completed"
+    o.completed_date=date.today()
     o.save()
     return redirect("dashboard")
 
@@ -213,9 +320,88 @@ def sales(request):
     else:
         log_out(request)
 
+def sales_snapshot(request):
+    if request.session['user_id'] != None:
+        
+    
+        open_rev=0
+        open_tech=0
+        total_billed=0
+        total_tech_fee=0
+        month=datetime.now().month
+        year=datetime.now().year
+        work_days=num_work_days(month,year)
+        order_capacity={}
+        completed_orders= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed")
+        working_orders=Order.objects.exclude(status="Completed").exclude(status="Cancelled")
+        count_list={}
+        client_list={}
+        percent_complete={}
+        for cl in Client.objects.all().order_by("name"):
+            if cl.name in client_list.keys():
+                pass
+            else:
+                client_list.setdefault(cl.name, {})['completed']=0
+                client_list.setdefault(cl.name, {})['working']=0
+        for app in Appraiser.objects.all().order_by('name'):
+            order_capacity[app.name]= app.capacity * work_days
+            if app.name in count_list.keys():
+                pass
+            else:
+                count_list.setdefault(app.name, {})['completed']=0
+                count_list.setdefault(app.name, {})['working']=0
+        for j in completed_orders:
+            total_billed += j.fee
+            total_tech_fee += j.tech_fee
+            count_list.setdefault(j.assigned_appraiser.name,{})['completed'] +=1
+            client_list.setdefault(j.client_ordered.name,{})['completed'] +=1
+                
+        for a in working_orders:
+            open_rev += a.fee
+            open_tech += a.tech_fee
+            count_list.setdefault(a.assigned_appraiser.name,{})['working'] +=1
+            client_list.setdefault(a.client_ordered.name,{})['working'] +=1
+        for app in Appraiser.objects.all():
+            percent_complete[app.name] =  round((count_list[app.name]['completed'] / order_capacity[app.name] * 100),2)
+    
+        if month < 10:
+            st_month=f"0{month}"
+        else:
+            st_month=str(month)
+
+        if len(completed_orders) ==0 and len(working_orders)==0:
+            avg_fee=0
+        else:
+            avg_fee = round(((total_billed-total_tech_fee)/len(completed_orders))+((open_rev-open_tech)/len(working_orders)), 2)
+        
+        context={
+            'completed_orders': completed_orders,
+            'completed_count':len(completed_orders),
+            'working_orders': working_orders,
+            'working_count':len(working_orders),
+            'appraisers':Appraiser.objects.all(),
+            'clients':Client.objects.all(),
+            'thisYear':year,
+            'int_month':int(st_month),
+            'thisMonth':Months[st_month],
+            'workdays':work_days,
+            'count_list':count_list,
+            'order_capacity':order_capacity,
+            'percent_complete':percent_complete,
+            'client_list':client_list,
+            'billed':total_billed-total_tech_fee,
+            'tech_fees': total_tech_fee+open_tech,
+            'net_rev': (total_billed-total_tech_fee)+(open_rev-open_tech),
+            'working_rev':open_rev-open_tech,
+            'avg_fee': avg_fee,
+        }
+        return render(request,'sales_snapshot.html',context)
+    else:
+        log_out(request)
+
 def run_sales_report(request):
     if request.session['user_id'] != None:
-
+    
         errorList=[]
         if 'year_selected' in request.POST:
             year=request.POST['year_selected']
@@ -248,7 +434,7 @@ def run_sales_report(request):
                 if j.assigned_appraiser.name in count_list.keys():
                     count_list[j.assigned_appraiser.name] +=1
                 else:
-                  count_list[j.assigned_appraiser.name] =1
+                      count_list[j.assigned_appraiser.name] =1
 
                 if j.client_ordered.name in client_list.keys():
                     client_list[j.client_ordered.name] +=1
@@ -281,6 +467,7 @@ def run_sales_report(request):
                 'appraisers':Appraiser.objects.all(),
                 'clients':Client.objects.all(),
                 'thisYear':year,
+                'int_month':int(st_month),
                 'thisMonth':Months[st_month],
                 'workdays':work_days,
                 'count_list':count_list,
@@ -293,6 +480,110 @@ def run_sales_report(request):
                 'avg_fee': avg_fee,
             }
             return render(request,'sales_report.html',context)
+    else:
+        log_out(request)
+
+def sales_by_client(request,name,mnth,yr):
+    if request.session['user_id'] != None:
+        client=Client.objects.get(name=name)
+        total_billed=0
+        total_tech_fee=0
+        month=mnth
+        year=yr
+        work_days=num_work_days(month,year)
+        completed_orders= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed").filter(client_ordered=client)
+        comp_count= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed").filter(client_ordered=client).count()
+        appraiser_list={}
+        for j in completed_orders:
+            total_billed += j.fee
+            total_tech_fee += j.tech_fee
+            if j.assigned_appraiser.name in appraiser_list.keys():
+                appraiser_list[j.assigned_appraiser.name] +=1
+            else:
+                appraiser_list[j.assigned_appraiser.name] =1
+        
+        if month < 10:
+            st_month=f"0{month}"
+        else:
+            st_month=str(month)
+        for appr in Appraiser.objects.all():
+            if appr.name in appraiser_list.keys():
+                pass
+            else:
+                appraiser_list[appr.name]=0
+        if comp_count ==0:
+            avg_fee=0
+        else:
+            avg_fee = round((total_billed-total_tech_fee)/comp_count, 2)
+        context={
+            'completed_orders': completed_orders,
+            'completed_count':comp_count,
+            'appraisers':appraiser_list,
+            'client':client,
+            'thisYear':year,
+            'int_month':int(st_month),
+            'thisMonth':Months[st_month],
+            'workdays':work_days,
+            'billed':total_billed,
+            'tech_fees': total_tech_fee,
+            'net_rev': total_billed-total_tech_fee,
+            'avg_fee': avg_fee,
+        }
+        return render(request,'client_sales_report.html',context)
+    else:
+        log_out(request)
+
+def sales_by_appraiser(request,pk,mnth,yr):
+    if request.session['user_id'] != None:
+
+        appraiser=Appraiser.objects.get(id=pk)
+        total_billed=0
+        total_tech_fee=0
+        month=mnth
+        year=yr
+        work_days=num_work_days(month,year)
+        completed_orders= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed").filter(assigned_appraiser=appraiser)
+        comp_count= len(completed_orders)
+        client_list={}
+        for j in completed_orders:
+            total_billed += j.fee
+            total_tech_fee += j.tech_fee
+            if j.client_ordered.name in client_list.keys():
+                client_list[j.client_ordered.name] +=1
+            else:
+                client_list[j.client_ordered.name] =1
+        
+        if month < 10:
+            st_month=f"0{month}"
+        else:
+            st_month=str(month)
+        for cl in Client.objects.all():
+            if cl.name in client_list.keys():
+                pass
+            else:
+                client_list[cl.name]=0
+        if comp_count ==0:
+            avg_fee=0
+        else:
+            avg_fee = round((total_billed-total_tech_fee)/comp_count, 2)
+        context={
+            'completed_orders': completed_orders,
+            'completed_count':comp_count,
+            'appraiser':appraiser,
+            'clients':Client.objects.all(),
+            'thisYear':year,
+            'int_month':int(st_month),
+            'thisMonth':Months[st_month],
+            'workdays':work_days,
+            'order_capacity':appraiser.capacity * work_days,
+            'percent_complete':round((comp_count / (appraiser.capacity * work_days) * 100),2),
+            'client_list':client_list,
+            'billed':total_billed,
+            'tech_fees': total_tech_fee,
+            'net_rev': total_billed-total_tech_fee,
+            'avg_fee': avg_fee,
+        }
+        return render(request,'appraiser_sales_report.html',context)
     else:
         log_out(request)
 
@@ -388,6 +679,7 @@ def run_payroll_report(request):
                 'first_total_pay':round(first_billed + 375,2),
                 'second_billed':round(second_billed,2),
                 'second_total_pay':round(second_billed +375,2),
+                'fee_split_rate':appraiser.fee_split_rate *100
             
             }
             return render(request,'payroll_report.html',context)
@@ -472,7 +764,7 @@ def manage_masters(request):
             'appraisers':Appraiser.objects.all().order_by('name'),
             'products':Product.objects.all().order_by('FNMA_form'),
         }
-        return render(request,'manage.html',context)
+        return render(request,'manage_masters.html',context)
     else:
         log_out(request)
 
@@ -494,45 +786,6 @@ def delete_client(request,pk):
     else:
         log_out(request)
 
-def new_appraiser(request):
-    if request.session['user_id'] != None:
-        print(request.POST)
-        result=Appraiser.objects.validation(request.POST)
-        if result[0] == True:
-            return redirect("manage_masters")
-        else:
-            for error in result[1]:
-                messages.error(request,error)
-            return redirect("manage_masters")
-    else:
-        log_out(request)
-
-def update_appraiser_capacity(request,pk):
-    if request.session['user_id'] != None:
-        errorslist=[]
-        a=Appraiser.objects.get(id=pk)
-        cap= int(request.POST['appraiser_capacity'])
-        if cap < 2:
-            errorslist.append("The min capacity is 2 per day.")
-            for error in errorslist:
-                messages.error(request,error)
-            return redirect('manage_masters')
-        else: 
-            a.capacity = cap
-            a.save()
-            return redirect('manage_masters')      
-            
-    else:
-        log_out(request)
-
-
-def delete_appraiser(request,pk):
-    if request.session['user_id'] != None:
-        a=Appraiser.objects.get(id=pk)
-        a.delete()
-        return redirect("manage_masters")
-    else:
-        log_out(request)
 
 def new_product(request):
     if request.session['user_id'] != None:

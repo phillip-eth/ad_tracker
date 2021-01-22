@@ -1,8 +1,7 @@
 __pycache__/
 .vscode/
 venv/
+settings.py
+db.sqlite3
 
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+

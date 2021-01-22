@@ -1,22 +1,22 @@
 {%extends "order_tracker_template.html"%}
-{%block title%}<title>Sales Report for {{thisMonth}} {{thisYear}}</title>{%endblock%}
+{%block title%}<title>Current Sales Snapshot</title>{%endblock%}
 
 {%block content%}
     <div class="display">
-        <h2 class="align-center"> Sales Report for:  {{thisMonth}}, {{thisYear}}</h2>
+        <h2 class="align-center"> Current Sales Snapshot </h2>
         <div class="stats">
             <table>
                 <tr>
-                    <td class="statlead">Orders Completed:  </td>
+                    <td class="statlead">Completed Orders:  </td>
                     <td>{{completed_count}}</td>
+                    <td class="statSecond">Working Orders: </td>
+                    <td>{{working_count}}</td>
                 </tr>
                 <tr>
-                    <td class="statlead">Total Billed:  </td>
+                    <td class="statlead">Billed Revenue:  </td>
                     <td>$ {{billed}}</td>
-                </tr>
-                <tr>
-                    <td class="statlead">Tech Fees:  </td>
-                    <td>$ {{tech_fees}}</td>
+                    <td class="statSecond">Total Working Revenue:  </td>
+                    <td>$ {{working_rev}}</td>
                 </tr>
                 <tr>
                     <td class="statlead">Net Revenue:  </td>
@@ -26,8 +26,14 @@
                     <td class="statlead">Average Fee:  </td>
                     <td>$ {{avg_fee}}</td>
                 </tr>
+                <tr>
+                    <td class="statlead">Tech Fees:  </td>
+                    <td>$ {{tech_fees}}</td>
+                </tr>
                 
             </table>
+
+        </div>
 
         </div>
         <div class="toptobottom">
@@ -35,6 +41,7 @@
             <h2>Appraiser Performance</h2>
             <table class="sales-table">
                 <th>Appraiser</th>
+                <th>Working Orders</th>
                 <th>Orders Completed</th>
                 <th>Order Capacity</th>
                 <th>Percentage of Capacity</th>
@@ -45,7 +52,8 @@
                         {%if a.name in count_list%}
                             {%for key, value in count_list.items %}
                                 {% if key == a.name %}
-                                <td>{{value}}</td>
+                                <td>{{value.working}}</td>
+                                <td>{{value.completed}}</td>
                                 {%endif%}
                             {%endfor%}
                         {%endif%}
@@ -79,7 +87,8 @@
             <h2>Client Activity</h2>
             <table class="sales-table">
                     <th>Client Name </th>
-                    <th>Num Orders</th>
+                    <th>Working Orders </th>
+                    <th>Completed Orders</th>
 
                     {% for client in client_list %}
                         <tr>
@@ -87,15 +96,24 @@
                             {%if client in client_list%}
                             {%for key, value in client_list.items %}
                                 {% if key == client %}
-                                    {% if value < 1 %}
-                                        <td class="red">{{value}}</td>
+                                    {% if value.working < 1 %}
+                                        <td class="red">{{value.working}}</td>
                                     {%else%}
-                                        <td class="blue">{{value}}</td>
+                                        <td class="blue">{{value.working}}</td>
+                                    {%endif%}
+                                {%endif%}
+                            {%endfor%}
+                            {%for key, value in client_list.items %}
+                                {% if key == client %}
+                                    {% if value.completed < 1 %}
+                                        <td class="red">{{value.completed}}</td>
+                                    {%else%}
+                                        <td class="blue">{{value.completed}}</td>
                                     {%endif%}
                                 {%endif%}
                             {%endfor%}
                         
-                        {%endif%}
+                            {%endif%}
                         </tr>
                     {%endfor %}
 

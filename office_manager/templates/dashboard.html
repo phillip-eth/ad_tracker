@@ -5,20 +5,21 @@
     {%block content%}
 
     <script type="text/javascript">
-        function validateForm() {
-        var x = document.forms["updated_status"]["updatedStatus"].value;
-        if (x == thisOrder.status.tostring()) {
-            alert("Please select a different status.");
+        function confirmComplete() {
+        var x = document.forms["user_update"]["user_role"].value;
+        if (x == "") {
+            alert("Please select a user role.");
             return false;
         }
         }
     </script>
         <div class="display">
-            <div class="stats">
+            {%if request.session.user_role == "admin"%}
+            <div class="stats" id="dash-stats">
 
                 <table>
                     <tr>
-                        <td class="statlead">1Working Orders:</td>
+                        <td class="statlead">Working Orders:</td>
                         <td>{{orderCount}}</td>
                         <td class="statSecond"> Today's New Orders:</td>
                         <td>{{todayOrder}}</td>
@@ -38,10 +39,19 @@
                     <tr>
                         <td class="statlead">Tech Fees:</td>
                         <td>{{techFees}}</td>
+                        <td class="statSecond">Orders Completed This Month:</td>
+                        <td>{{numOrdersCompleted}}</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td class="statSecond green">Combined Monthly Revenue:</td>
+                        <td>{{combinedRev}}</td>
                     </tr>
                 </table>
 
             </div>
+            {%endif%}
             <div class="search">
                 <h2>Search by Address</h2>
                 <form action="search_order" method="post">
@@ -62,7 +72,7 @@
             
             <div class="addOrder">
                 <h2>Add New Order</h2>
-                <form action="add_order" method="post">
+                <form action="add_order" method="post" class="align-center">
                     {% csrf_token %}
                     
                     <input type="hidden" name="user_id" value="{{request.session.user_id}}">
@@ -84,9 +94,11 @@
                     </select>
                     <select name="appraiser_assigned">
                     <option value="" disabled selected>Select Appraiser</option>
-                        {% for appraiser in appraiserList %}
-                            <option value="{{appraiser.id}}">{{appraiser.name}}</option>
-                        {% endfor %}
+                        {%if appraiser.status != "Suspended"%}
+                            {% for appraiser in appraiserList %}
+                                <option value="{{appraiser.id}}">{{appraiser.name}}</option>
+                            {% endfor %}
+                        {%endif%}
                     </select>
                     <input type="date" name="due_date" id="dueDate" placeholder="Due Date">
                     <button type="submit">Add</button>
@@ -102,7 +114,7 @@
                     <th>Client</th>
                     <th>Product</th>
                     <th>Appraiser</th>
-                    <th>Due Date</th>
+                    <th class="align-center">Due Date</th>
                     <th class="align-center">Status</th>
                     <th>Actions</th>
                     {% for thisOrder in orders%}
@@ -110,12 +122,12 @@
                         <tr>
                             <td>{{thisOrder.created_at|date:"m/d/y"}}</td>
                             <td>{{thisOrder.fee}}</td>
-                            <td>{{thisOrder.tech_fee}}</td>
+                            <td class="align-center">{{thisOrder.tech_fee}}</td>
                             <td><a href="order_edit/{{thisOrder.id}}"> {{thisOrder.address}} </a></td>
                             <td>{{thisOrder.client_ordered}}</td>
                             <td>{{thisOrder.product_type}}</td>
                             <td>{{thisOrder.assigned_appraiser}}</td>
-                            <td>{{thisOrder.due_date|date:"m/d/y"}}</td>
+                            <td class="align-center">{{thisOrder.due_date|date:"m/d/y"}}</td>
                             <td class="align-right"> <span>{{thisOrder.status}}</span>
                             
                             <form id="update_status" name="update_status" action="update_status/{{thisOrder.id}}" method="post" onsubmit="return validateForm()">
@@ -135,8 +147,8 @@
                             </td>
                             <td>
                                 
+                                <a href="complete_order/{{thisOrder.id}}"><button class="orderAction" onclick="return confirm('Are you sure you want to complete this order?');">Complete</button></a>
                                 <a href="order_edit/{{thisOrder.id}}"><button class="orderAction" id="editButton">Edit</button></a>
-                                <a href="complete_order/{{thisOrder.id}}"><button class="orderAction">Complete</button></a>
                                 {% if thisOrder.status == "Add Order"%}
                                     <span class="errors">**Add</span>
                                 {% endif %}
