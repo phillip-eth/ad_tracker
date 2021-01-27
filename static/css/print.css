@@ -1,0 +1,241 @@
+
+* {
+    vertical-align: baseline;
+    font-weight: inherit;
+    font-family: 'Rubik', sans-serif;
+    font-style: inherit;
+    font-size: 100%;
+    border: 0 none;
+    outline: 0;
+    padding: 0;
+    
+    }
+    
+    .wrapper {
+        text-align: center;
+        margin: 0px auto;
+        vertical-align: top;
+        width: 95%;
+        
+        
+    }
+    
+    .sidebyside{
+        display: inline-block;
+        border: 2px dotted gray;
+        border-radius: 5px;
+        padding: 10px 10px;
+        margin: 10px;
+        width: 29%;
+        text-align: left;
+        vertical-align: top;
+    }
+   
+    
+    .stats{
+        display: inline-block;
+    }
+    .stats td{
+        font-size: 15px;
+        border: 0px;
+
+    }
+    .statlead{
+        color: rgb(27, 9, 107);
+        font-weight: bold;
+        padding-right: 5px;
+    }
+    
+  
+    .header{
+        text-align: left;
+        vertical-align: bottom;
+        padding-bottom: 10px;
+        margin-bottom: 0px;
+    }
+    #logo{
+        width: 100px;
+        display: inline-block;
+
+    }
+    
+    .home-button{
+        margin-top: 30px;
+        margin-right: 90px;
+    }
+    .main{
+        width: 900 px;
+        /* padding: 0em 1em; */
+        /* padding-right: 2em; */
+        text-align: center;
+        margin:auto;
+        
+    }
+    #notes{
+        width: 15px;
+    }
+    #completed{
+        width: 20px;
+    }
+    .sideheader{
+        position: absolute;
+        right: 50px;
+        top: 40px;
+        /* margin-left: 70%; */
+        display: inline-block;
+        text-align: right;
+        
+    }
+    .statusSelect{
+        margin-right: 5px;
+    }
+    .sidebar{
+        width: 25%;
+        padding: 5px;
+        display: inline-block;
+        vertical-align: top;
+        /* margin-top: 20px; */
+        text-align: left;
+        /* margin-left: 1em; */
+    }
+    .order_detail{
+        width: 80%;
+    }
+    .order_detail td, th{
+        border-bottom: 0px;
+
+    }
+    .align-right{
+        text-align: right;
+    }
+    .align-left{
+        text-align: left;
+    }
+    .align-center{
+        text-align: center;
+    }
+    
+    }
+    .errors{
+        color: red;
+    }
+    
+    h1{
+        font-size: 40px;
+        font-weight: bold;
+        margin-bottom: .3em;
+    }
+    th, td{
+        padding-right: 5px;
+        /* margin: 0px 3px; */
+        border-bottom: 1px solid rgb(228, 231, 230);
+    }
+    td{
+        font-size: 13px;
+        /* border-right: 1px dotted rgb(240, 233, 233); */
+    }
+    table{
+        margin: 20px 0px;
+        width: 100%;
+        /* text-align: center; */
+    }
+    
+    form{
+        margin: 20px 0px;
+    }
+    select{
+        border: 1px solid black;
+        padding: 6px 0px;
+        background-color: rgb(243, 240, 247);
+    }
+    form input{
+        padding: 5px;
+        background-color: rgb(207, 206, 206);
+        border: 1px solid gray;
+        width: 70%;
+    }
+    textarea{
+        padding: 5px;
+        margin: 0px 20px 20px 0px;
+        background-color: rgb(207, 206, 206);
+        border: 1px solid gray;
+        width: 500px;
+    }
+    
+    button{
+        background-color: black;
+        color: white;
+        padding: 8px 12px;
+        margin-top: 15px;
+    }
+    .delete{
+        background-color: red;
+    
+    }
+    
+    h2{
+        font-weight: bold;
+        font-size: 20px;
+        margin-bottom: 5px;
+    }
+    
+    h3{
+        font-weight: bold;
+    }
+
+    span{
+        font-weight: bold;
+        color: rgb(24, 24, 34);
+    }
+    ul{
+        margin-left: 20px;
+    }
+    .italics{
+        font-size: 12px;
+        font-style: italic;
+    }
+    #update_status{
+        display: inline-block;
+    }
+    .blue{
+        color: blue;
+    }
+    .green{
+        color: rgb(33, 134, 33);
+    }
+    .red{
+        color: rgb(204, 4, 4);
+    }
+    .payroll_display th{
+        font-size: 13px;
+        font-weight: bold;
+    }
+    .payroll_display td{
+        font-size: 12px;
+    }
+    .payroll_stats{
+        display: inline-block;
+        width: 220px;
+        margin-right: 10px;
+        vertical-align: top;
+    }
+    .payroll_stats th, td{
+        border-bottom: None;
+    }
+    .payroll_stats h3{
+        border-bottom: 2px solid black;
+        font-size: ;
+    }
+    .payroll_stats p{
+        font-size: 13px;
+    }
+    .total{
+        border-top: 1px solid black;
+        padding-top: 3px;
+    }
+
+    .product-short{
+        width: 95px;
+    }
+
+    

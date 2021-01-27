@@ -103,7 +103,7 @@ class OrderManager(models.Manager):
             new_order= self.create(
                 fee = postData['fee'],
                 tech_fee=t_fee,
-                app_fee_split= fee_split,
+                app_fee_split=round(fee_split,2),
                 address= postData['address'],
                 status = 'Add Order',
                 due_date = postData['due_date'],

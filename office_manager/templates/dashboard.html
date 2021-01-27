@@ -123,9 +123,9 @@
                             <td>{{thisOrder.created_at|date:"m/d/y"}}</td>
                             <td>{{thisOrder.fee}}</td>
                             <td class="align-center">{{thisOrder.tech_fee}}</td>
-                            <td><a href="order_edit/{{thisOrder.id}}"> {{thisOrder.address}} </a></td>
-                            <td>{{thisOrder.client_ordered}}</td>
-                            <td>{{thisOrder.product_type}}</td>
+                            <td class="list-address" ><a href="order_edit/{{thisOrder.id}}"> {{thisOrder.address}} </a></td>
+                            <td class="product-short">{{thisOrder.client_ordered}}</td>
+                            <td class="product-short">{{thisOrder.product_type}}</td>
                             <td>{{thisOrder.assigned_appraiser}}</td>
                             <td class="align-center">{{thisOrder.due_date|date:"m/d/y"}}</td>
                             <td class="align-right"> <span>{{thisOrder.status}}</span>

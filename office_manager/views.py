@@ -24,7 +24,7 @@ Months = {
     '11':'Nov',
     '12':'Dec',
 }
-Years = [2021,2022,2023,2024,2025]
+Years = [2020,2021,2022,2023,2024,2025]
 
 def num_work_days(month,year):
     thisYear = int(year)
@@ -169,7 +169,7 @@ def order_edit_process(request,pk):
         }
         return redirect(f"../order_edit/{pk}",context)
     else:
-        o.app_fee_split= float(o.fee) - float(o.tech_fee)
+        o.app_fee_split= (float(o.fee) - float(o.tech_fee))*o.assigned_appraiser.fee_split_rate
         o.save()
         return redirect(f"../order_edit/{pk}")
     
@@ -332,7 +332,7 @@ def sales_snapshot(request):
         year=datetime.now().year
         work_days=num_work_days(month,year)
         order_capacity={}
-        completed_orders= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed")
+        completed_orders= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed")
         working_orders=Order.objects.exclude(status="Completed").exclude(status="Cancelled")
         count_list={}
         client_list={}
@@ -542,7 +542,7 @@ def sales_by_appraiser(request,pk,mnth,yr):
         month=mnth
         year=yr
         work_days=num_work_days(month,year)
-        completed_orders= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed").filter(assigned_appraiser=appraiser)
+        completed_orders= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed").filter(assigned_appraiser=appraiser)
         comp_count= len(completed_orders)
         client_list={}
         for j in completed_orders:
@@ -606,6 +606,7 @@ def run_payroll_report(request):
             appraiser=Appraiser.objects.get(id=request.POST['appraiser_selected'])
             first_billed =0
             second_billed =0
+            feeTotal=0
             first_tech =0
             second_tech =0
             month=int(request.POST['month_selected'])
@@ -633,6 +634,7 @@ def run_payroll_report(request):
             for j in first_period_completed:
                 first_billed += j.app_fee_split
                 first_tech += j.tech_fee
+                feeTotal += j.fee
 
                 if j.client_ordered.name in client_list.keys():
                     client_list[j.client_ordered.name] +=1
@@ -641,6 +643,7 @@ def run_payroll_report(request):
             for j in second_period_completed:
                 second_billed += j.app_fee_split
                 second_tech += j.tech_fee
+                feeTotal += j.fee
 
                 if j.client_ordered.name in client_list.keys():
                     client_list[j.client_ordered.name] +=1
@@ -656,7 +659,7 @@ def run_payroll_report(request):
             if count_list ==0:
                 avg_fee=0
             else:
-                avg_fee = round((total_billed-total_tech_fee)/count_list, 2)
+                avg_fee = round(feeTotal/count_list, 2)
            
             context={
                 'completed_orders': completed_orders,
