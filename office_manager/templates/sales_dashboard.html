@@ -2,11 +2,15 @@
 
 {%block title%}<title>Sales Report Generator</title>{%endblock%}
 {%block content%}
-    <div class="align-center">
-        <h2 class="reduce_btm_margin">Current Snapshot</h2>
+    <div class="sidebyside align-center">
+        <h2 class="reduce_btm_margin">Today's Recap</h2>
+        <a href="./recap_today"><button class="green_button">Get Today's Report</button></a>
+    </div>
+    <div class="sidebyside align-center">
+        <h2 class="reduce_btm_margin">Current Month Snapshot</h2>
         <a href="./sales_snapshot"><button class="green_button">Get Report</button></a>
     </div>
-    <div class="display align-center">
+    <div class="sidebyside align-center">
         <h2> Past Sales Report Generator</h2>
         <h3>Please select the dates for your sales report.</h3>
         <form action="run_sales_report" name="sales_report" method="post">

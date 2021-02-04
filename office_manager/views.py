@@ -65,7 +65,6 @@ def log_out(request):
 
 def dashboard(request):
     if request.session['user_id'] != None:
-        today=datetime.today()
         month=datetime.now().month
         year=datetime.now().year
         orders= Order.objects.exclude(status="Cancelled").exclude(status="Completed")
@@ -587,6 +586,124 @@ def sales_by_appraiser(request,pk,mnth,yr):
     else:
         log_out(request)
 
+def recap_today(request):
+    if request.session['user_id'] != None:
+        month=datetime.now().month
+        year=datetime.now().year  
+        day=datetime.now().day
+        new_order_rev=0
+        today_tech_fee=0
+        today_billed=0
+        completed_tech=0
+        today_q = date.today()
+        completed_orders=  Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(completed_date__day=day).filter(status="Completed")
+        new_order_list=Order.objects.filter_by_date_create(today_q).exclude(status="Cancelled")
+        appraiser_list={}
+        client_list={}
+        # client_list_new={}
+        company_split=0
+
+        for app in Appraiser.objects.filter(status="Active").order_by('name'):
+            if app.name in appraiser_list.keys():
+                pass
+            else:
+                appraiser_list.setdefault(app.name, {})['completed']=0
+                appraiser_list.setdefault(app.name, {})['new_orders']=0
+                appraiser_list.setdefault(app.name, {})['new_rev']=0
+                appraiser_list.setdefault(app.name, {})['billed_rev']=0
+                appraiser_list.setdefault(app.name, {})['capacity']=app.capacity
+
+        # for cl in Client.objects.all().order_by('name'):
+        #     if cl.name in client_list.keys():
+        #         pass
+        #     else:
+        #         client_list.setdefault(cl.name, {})['new_orders']=0
+        #         client_list.setdefault(cl.name, {})['new_rev']=0
+        #         client_list.setdefault(cl.name, {})['completed']=0
+        #         client_list.setdefault(cl.name, {})['billed_rev']=0
+
+        for order in new_order_list:
+            if order.client_ordered.name in client_list.keys():
+                pass
+                # if client_list[order.client_ordered.name]['new_orders'] >= 0:
+                #     pass
+                # else:
+                #     client_list.setdefault(order.client_ordered.name, {})['new_orders']=0
+                # if client_list[order.client_ordered.name]['new_rev'] >= 0:
+                #     pass
+                # else:
+                #     client_list.setdefault(order.client_ordered.name, {})['new_rev']=0
+            else:
+                client_list.setdefault(order.client_ordered.name, {})['new_orders']=0
+                client_list.setdefault(order.client_ordered.name, {})['new_rev']=0
+
+            client_list.setdefault(order.client_ordered.name, {})['new_orders']+=1
+            client_list.setdefault(order.client_ordered.name, {})['new_rev']+=order.fee
+            appraiser_list.setdefault(order.assigned_appraiser.name, {})['new_orders']+=1
+            appraiser_list.setdefault(order.assigned_appraiser.name, {})['new_rev']+=order.fee
+            new_order_rev += order.fee
+            today_tech_fee += order.tech_fee
+            company_split += (order.fee-order.app_fee_split)
+                
+        for o  in completed_orders:
+            if o.client_ordered.name in client_list.keys():
+                if 'completed' in client_list[o.client_ordered.name].keys():
+                    pass
+                else:
+                    client_list.setdefault(o.client_ordered.name, {})['completed']=0
+
+                if 'billed_rev' in client_list[o.client_ordered.name].keys():
+                    pass
+                else:
+                    client_list.setdefault(o.client_ordered.name, {})['billed_rev']=0    
+                # print(client_list.items())
+            else:
+                # print(client_list.items())
+                client_list.setdefault(o.client_ordered.name, {})['completed']=0
+                client_list.setdefault(o.client_ordered.name, {})['billed_rev']=0
+            
+            client_list.setdefault(o.client_ordered.name, {})['completed']+=1
+            client_list.setdefault(o.client_ordered.name, {})['billed_rev']+=o.fee
+            appraiser_list.setdefault(o.assigned_appraiser.name, {})['completed']+=1
+            appraiser_list.setdefault(o.assigned_appraiser.name, {})['billed_rev']+=o.fee
+            completed_tech+= o.tech_fee
+            today_billed+= o.fee
+            company_split += (o.fee-o.app_fee_split)
+        # print(today_billed, company_split)
+        if len(completed_orders) ==0:
+            completed_avg_fee=0
+        else:
+            completed_avg_fee = round((today_billed-completed_tech)/len(completed_orders),2)
+
+        if len(new_order_list) ==0:
+            new_avg_fee=0
+        else:
+            new_avg_fee = round((new_order_rev-today_tech_fee)/len(new_order_list),2)
+        
+        context={
+            'completed_orders': completed_orders,
+            'completed_count':len(completed_orders),
+            'new_orders': new_order_list,
+            'new_count':len(new_order_list),
+            'appraisers':Appraiser.objects.filter(status="Active"),
+            'clients':Client.objects.all(),
+            'client_list':client_list,
+            'appraiser_list':appraiser_list,
+            'billed':today_billed,
+            'billed_tech_fees': completed_tech,
+            'net_billed_rev': today_billed-completed_tech,
+            'new_rev': new_order_rev,
+            'new_tech_fees':today_tech_fee,
+            'new_net_rev': new_order_rev-today_tech_fee,
+            'completed_avg_fee': completed_avg_fee,
+            'new_avg_fee': new_avg_fee,
+            'company_split':company_split,
+            'today':today_q,
+        }
+        return render(request,'recap_today.html',context)
+    else:
+        log_out(request)
+
 def run_payroll_report(request):
     if request.session['user_id'] != None:
         errorList=[]
@@ -605,10 +722,8 @@ def run_payroll_report(request):
         else:
             appraiser=Appraiser.objects.get(id=request.POST['appraiser_selected'])
             first_billed =0
-            second_billed =0
             feeTotal=0
             first_tech =0
-            second_tech =0
             month=int(request.POST['month_selected'])
             year=int(request.POST['year_selected'])
             work_days=num_work_days(month,year)
@@ -619,19 +734,26 @@ def run_payroll_report(request):
                 payroll_month=month-1
                 payroll_year=year
             
-            print(payroll_month, payroll_year)
+            # print(payroll_month, payroll_year)
             order_capacity=appraiser.capacity * work_days
 
-            completed_orders= Order.objects.filter(due_date__month=payroll_month).filter(due_date__year=payroll_year).filter(status="Completed").filter(assigned_appraiser = appraiser)
+            # completed_orders= Order.objects.filter(due_date__month=payroll_month).filter(due_date__year=payroll_year).filter(status="Completed").filter(assigned_appraiser = appraiser)
 
-            first_period_completed=Order.objects.filter(due_date__month=payroll_month).filter(due_date__year=payroll_year).filter(due_date__day__lt=16).filter(status="Completed").filter(assigned_appraiser = appraiser)
+            if month < 10:
+                st_month=f"0{month}"
+            else:
+                st_month=str(month)
+            if request.POST['payroll_period'] == '1':
+                pay_period = f"1st of {Months[st_month]}, {payroll_year}"
+                period_completed=Order.objects.filter(due_date__month=payroll_month).filter(due_date__year=payroll_year).filter(due_date__day__lt=16).filter(status="Completed").filter(assigned_appraiser = appraiser)
+            else:
+                pay_period = f"15th of {Months[st_month]}, {payroll_year}"
+                period_completed=Order.objects.filter(due_date__month=payroll_month).filter(due_date__year=payroll_year).filter(due_date__day__gt=15).filter(status="Completed").filter(assigned_appraiser = appraiser)
 
-            second_period_completed=Order.objects.filter(due_date__month=payroll_month).filter(due_date__year=payroll_year).filter(due_date__day__gt=15).filter(status="Completed").filter(assigned_appraiser = appraiser)
-
-            count_list=completed_orders.count()
+            count_list=period_completed.count()
             client_list={}
             percent_complete=round((count_list/ order_capacity * 100),2)
-            for j in first_period_completed:
+            for j in period_completed:
                 first_billed += j.app_fee_split
                 first_tech += j.tech_fee
                 feeTotal += j.fee
@@ -640,30 +762,17 @@ def run_payroll_report(request):
                     client_list[j.client_ordered.name] +=1
                 else:
                     client_list[j.client_ordered.name] =1
-            for j in second_period_completed:
-                second_billed += j.app_fee_split
-                second_tech += j.tech_fee
-                feeTotal += j.fee
+            
 
-                if j.client_ordered.name in client_list.keys():
-                    client_list[j.client_ordered.name] +=1
-                else:
-                    client_list[j.client_ordered.name] =1
-            if month < 10:
-                st_month=f"0{month}"
-            else:
-                st_month=str(month)
-
-            total_billed=round(first_billed + second_billed,2)
-            total_tech_fee=round(first_tech + second_tech,)
+            total_billed=round(first_billed,2)
+            total_tech_fee=round(first_tech)
             if count_list ==0:
                 avg_fee=0
             else:
                 avg_fee = round(feeTotal/count_list, 2)
            
             context={
-                'completed_orders': completed_orders,
-                'completed_count':completed_orders.count(),
+                'completed_count':count_list,
                 'thisYear':year,
                 'thisMonth':Months[st_month],
                 'workdays':work_days,
@@ -676,13 +785,11 @@ def run_payroll_report(request):
                 'net_rev': total_billed-total_tech_fee,
                 'avg_fee': avg_fee,
                 'appr':appraiser,
-                'first_period':first_period_completed,
-                'second_period': second_period_completed,
+                'pay_period_completed':period_completed,
                 'first_billed':round(first_billed,2),
                 'first_total_pay':round(first_billed + 375,2),
-                'second_billed':round(second_billed,2),
-                'second_total_pay':round(second_billed +375,2),
-                'fee_split_rate':appraiser.fee_split_rate *100
+                'fee_split_rate':appraiser.fee_split_rate *100,
+                'pay_period':pay_period
             
             }
             return render(request,'payroll_report.html',context)

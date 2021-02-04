@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{% static './css/print.css' %}">
 
     <link href="https://fonts.googleapis.com/css?family=Rubik&display=swap" rel="stylesheet">
-    <title>AD Payroll Report {{appr.name}} / {{thisMonth}}, {{thisYear}}</title>
+    <title>AD Payroll Report {{appr.name}} / {{pay_period}}</title>
 </head>
 {% load static %}
 
@@ -17,7 +17,7 @@
 
     <div class="main">
         <a href="dashboard"><img src= "{% static './img/Appraisal-Den-Logos-1.png' %}" alt="Appraisal Den Logo" id="logo"></a>
-        <h2> Payroll Report for : {{appr.name}} {{thisMonth}}, {{thisYear}}</h2> 
+        <h2> Payroll Report for : {{appr.name}} / {{pay_period}}</h2> 
         <div class="align-center"><a href="javascript:history.back()">Back to Company Payroll Reports</a></div>
         <div class="payroll_stats">
             <h3>Appraiser Performance</h3>
@@ -38,7 +38,7 @@
         </div>
         
         <div class="payroll_stats">
-            <h3>1st Period Breakdown</h3>
+            <h3>Pay Period Breakdown</h3>
             <table class="align-left">
                 <tr>
                     <td class="statlead">Total Fee Split</td>
@@ -61,33 +61,9 @@
                     <p class ="red">Basepay rate not exceeded. Basepay amount of $4,541.67 paid.</p>
                 {%endif%}
         </div>
-        <div class="payroll_stats">
-            <h3>2nd Period Breakdown</h3>
-            <table class="align-left">
-                <tr>
-                    <td class="statlead">Total Fee Split</td>
-                    <td>$ {{second_billed}}</td>
-                </tr>
-                <tr>
-                    <td class="statlead">Gas Allowance:</td>
-                    <td>$ 200.00</td>
-                </tr>
-                <tr>
-                    <td class="statlead">Health Contribution:</td>
-                    <td>$ 175.00</td>
-                </tr>
-                <tr class="total">
-                    <td class="statlead total">Total Pay:</td>
-                    <td class="total">$ {{second_total_pay}}</td>
-                </tr>
-            </table>
-                {% if second_total_pay < 4541 %}
-                    <p class ="red">Basepay rate not exceeded. Basepay amount of $4,541.67 paid.</p>
-                {%endif%}
-
-        </div>
+        
         <div class="toptobottom">
-            <h2>1st Pay Period Activity</h2>
+            <h2>Pay Period Activity</h2>
             <table class="payroll_display align-left">
                 <th>Order Date</th>
                 <th>Fee Split</th>
@@ -99,11 +75,11 @@
                 <th>Due Date</th>
                 <th>Completed On:</th>
                 
-                {% for thisOrder in first_period%}
+                {% for thisOrder in pay_period_completed%}
                    
                     <tr>
                         <td>{{thisOrder.created_at|date:"m/d/y"}}</td>
-                        <td>{{thisOrder.app_fee_split}}</td>
+                        <td>{{ thisOrder.app_fee_split|floatformat:2 }}</td>
                         <td> {{thisOrder.address}}</td>
                         <td>{{thisOrder.client_ordered}}</td>
                         <td>{{thisOrder.product_type}}</td>
@@ -117,38 +93,6 @@
                 {% endfor %}
             </table>
             
-        </div>
-        <div class="toptobottom">
-            <h2>2nd Pay Period Activity</h2>
-            <table class="payroll_display align-left">
-                <th>Order Date</th>
-                <th>Fee Split</th>
-                <th>Address</th>
-                <th>Client</th>
-                <th>Product</th>
-                <th>Appraiser</th>
-                <th>Status</th>
-                <th>Due Date</th>
-                <th>Completed On:</th>
-                
-                {% for thisOrder in second_period%}
-                   
-                    <tr>
-                        <td>{{thisOrder.created_at|date:"m/d/y"}}</td>
-                        <td>{{thisOrder.app_fee_split}}</td>
-                        <td>{{thisOrder.address}}</td>
-                        <td>{{thisOrder.client_ordered}}</td>
-                        <td>{{thisOrder.product_type}}</td>
-                        <td>{{thisOrder.assigned_appraiser}}</td>
-                        <td> {{thisOrder.status}}</td>
-                        <td>{{thisOrder.due_date|date:"m/d/y"}}</td>
-                        <td>{{thisOrder.completed_date|date:"m/d/y"}}</td>
-                        
-                    </tr>
-                    
-                {% endfor %}
-            </table>
-        </div>
     
     </div>
 

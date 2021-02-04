@@ -1,0 +1,210 @@
+{%extends "order_tracker_template.html"%}
+{%block title%}<title>Sales Snapshot for {{today|date:"m/d/y"}}</title>{%endblock%}
+
+{%block content%}
+    <div class="display">
+        <h2 class="align-center">Sales Snapshot for {{today|date:"m/d/y"}}</h2>
+        <div class="align-center"><a href="javascript:history.back()">Back to Company Sales Reports</a></div>
+        <div class="stats">
+            <table>
+                <tr>
+                    <td class="statlead">Completed Orders:  </td>
+                    <td>{{completed_count}}</td>
+                    <td class="statSecond">Today's New Orders: </td>
+                    <td>{{new_count}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Billed Revenue:  </td>
+                    <td>$ {{billed}}</td>
+                    <td class="statSecond">New Revenue:  </td>
+                    <td>$ {{new_rev}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Billed Tech Fees:  </td>
+                    <td>$ {{billed_tech_fees}}</td>
+                    <td class="statSecond">New Tech Fees:  </td>
+                    <td>$ {{new_tech_fees}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Net Billed Revenue:  </td>
+                    <td>$ {{net_billed_rev}}</td>
+                    <td class="statSecond">Net New Revenue:  </td>
+                    <td>$ {{new_net_rev}}</td>
+                </tr>
+                <tr>
+                    <td class="statlead">Avg Billed Fee:  </td>
+                    <td>$ {{completed_avg_fee}}</td>
+                    <td class="statSecond">Avg New Fee:  </td>
+                    <td>$ {{new_avg_fee}}</td>
+                </tr>
+                <tr>
+                
+                    <td class="statlead">Company Fee Split Revenue:  </td>
+                    <td>$ {{company_split}}</td>
+                    
+                </tr>
+                
+            </table>
+
+        </div>
+
+        </div>
+        <div class="toptobottom">
+
+            <h2>Appraiser Performance</h2>
+            <table class="sales-table">
+                <th>Appraiser</th>
+                <th>Daily Capacity</th>
+                <th>New Orders Today</th>
+                <th>New Order Revenue</th>
+                <th>Completed Today</th>
+                <th>Billed Revenue</th>
+                {% for a in appraisers %}
+                    
+                    <tr>
+                        <td>{{a.name}}</td>
+                        {%if a.name in appraiser_list%}
+                            {%for key, value in appraiser_list.items %}
+                                {% if key == a.name %}
+                                    <td class='blue'>{{value.capacity}}</td>
+                                    <td>{{value.new_orders}}</td>
+                                    <td>$ {{value.new_rev}}</td>
+                                    <td>{{value.completed}}</td>
+                                    <td>$ {{value.billed_rev}}</td>
+                                {%endif%}
+                            {%endfor%}
+
+                        {%endif%}
+                        
+                    </tr>
+                {%endfor%}
+            </table>
+        </div>
+        <div class="toptobottom">
+            <h2>Client Activity</h2>
+            <table class="sales-table">
+                    <th>Client Name </th>
+                    <th>New Orders Today</th>
+                    <th>New Order Revenue</th>
+                    <th>Completed Today</th>
+                    <th>Billed Revenue</th>
+
+                    {% for client in clients %}
+                        <tr>
+                            {%if client.name in client_list%}
+                                
+                                    <td>{{client.name}}</td>
+                                    {%for key, value in client_list.items %}
+                                        {% if key == client.name %}
+                                            {%if value.new_orders == None%}
+                                                <td>0</td>
+                                            {%else%}
+                                                <td>{{value.new_orders}}</td>
+                                            {%endif%}
+                                            {%if value.new_rev == None%}
+                                                <td>$ 0</td>
+                                            {%else%}
+                                                <td>$ {{value.new_rev}}</td>
+                                            {%endif%}                                           
+                                            {%if value.completed == None%}
+                                            <td>0</td>
+                                            {%else%}
+                                            <td>{{value.completed}}</td>
+                                            {%endif%}
+                                            {%if value.billed_rev == None%}
+                                            <td>0</td>
+                                            {%else%}
+                                            <td>$ {{value.billed_rev}}</td>
+                                            {%endif%}
+                                            
+                                        {%endif%}
+                                    {%endfor%}  
+                            {%endif%}
+                        </tr>
+                    {%endfor %}
+
+
+            </table>
+        </div>
+        {%if new_orders != None %}
+            <div class="searchResults">
+            <h3> New Orders Today</h3>
+                <table>
+                    <th>Order Date</th>
+                    <th>Fee</th>
+                    <th>Tech Fee</th>
+                    <th>Address</th>
+                    <th>Client</th>
+                    <th>Product</th>
+                    <th>Appraiser</th>
+                    <th>Due Date</th>
+                    <th class="align-center">Status</th>
+                    
+                    
+                    {% for result in new_orders %}
+                        
+                        <tr>
+                            <td>{{result.created_at|date:"m/d/y"}}</td>
+                            <td>{{result.fee}}</td>
+                            <td>{{result.tech_fee}}</td>
+                            <td><a href="order_edit/{{result.id}}"> {{result.address}} </a></td>
+                            <td>{{result.client_ordered}}</td>
+                            <td class="product-short">{{result.product_type.FNMA_form}}<br> {{result.product_type.desc}}</td>
+                            <td>{{result.assigned_appraiser}}</td>
+                            <td>{{result.due_date|date:"m/d/y"}}</td>
+                            <td class="align-right">{{result.status}}</td>
+                            
+                              
+                        </tr>
+                        
+
+            {% endfor %}
+        </table>
+        {% else %}
+            <p class="errors">No New Orders Today</p>
+        {%endif%}
+        </div>
+        {%if completed_orders != None %}
+            <div class="searchResults">
+            <h3> Completed Orders Today</h3>
+                <table>
+                    <th>Order Date</th>
+                    <th>Fee</th>
+                    <th>Tech Fee</th>
+                    <th>Address</th>
+                    <th>Client</th>
+                    <th>Product</th>
+                    <th>Appraiser</th>
+                    <th>Due Date</th>
+                    <th class="align-center">Status</th>
+                    <th class="align-right">Completed Date</th>
+                    
+                    {% for result in completed_orders %}
+                        
+                        <tr>
+                            <td>{{result.created_at|date:"m/d/y"}}</td>
+                            <td>{{result.fee}}</td>
+                            <td>{{result.tech_fee}}</td>
+                            <td><a href="order_edit/{{result.id}}"> {{result.address}} </a></td>
+                            <td>{{result.client_ordered}}</td>
+                            <td class="product-short">{{result.product_type.FNMA_form}}<br> {{result.product_type.desc}}</td>
+                            <td>{{result.assigned_appraiser}}</td>
+                            <td>{{result.due_date|date:"m/d/y"}}</td>
+                            <td class="align-right">{{result.status}}</td>
+                            <td class="align-right">{{result.completed_date|date:"m/d/y"}}</td>
+                              
+                        </tr>
+                        
+
+            {% endfor %}
+        </table>
+        {% else %}
+            <p class="errors">No Completed Orders Today</p>
+        {%endif%}
+        </div>
+        
+</div>
+
+            
+
+{%endblock%}

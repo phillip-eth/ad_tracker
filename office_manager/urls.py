@@ -38,6 +38,7 @@ urlpatterns = [
     path('delete/<int:pk>', views.delete, name='delete'),
     path('run_sales_report', views.run_sales_report, name='run_sales_report'),
     path('sales_snapshot', views.sales_snapshot, name='sales_snapshot'),
+    path('recap_today', views.recap_today, name='recap_today'),
     path('run_payroll_report', views.run_payroll_report, name='run_payroll_report'),
     path('sales_by_appraiser/<int:pk>/<int:mnth>/<int:yr>', views.sales_by_appraiser, name='sales_by_appraiser'),
     path('sales_by_client/<str:name>/<int:mnth>/<int:yr>', views.sales_by_client, name='sales_by_client'),

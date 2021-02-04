@@ -45,7 +45,7 @@
                     <td>
                         
                         <a href="order_edit/{{result.id}}"><button class="orderAction" id="editButton">Edit</button></a>
-                        <a href="complete_order/{{result.id}}"><button class="orderAction">Complete</button></a>
+                        <a href="complete_order/{{result.id}}"><button class="orderAction" onclick="return confirm('Are you sure you want to complete this order?');">Complete</button></a>
                         {% if result.status == "Add Order"%}
                             <span class="errors">**Add</span>
                         {% endif %}
