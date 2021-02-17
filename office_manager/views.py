@@ -67,7 +67,7 @@ def dashboard(request):
     if request.session['user_id'] != None:
         month=datetime.now().month
         year=datetime.now().year
-        orders= Order.objects.exclude(status="Cancelled").exclude(status="Completed")
+        orders= Order.objects.exclude(status="Cancelled").exclude(status="Completed").order_by('-created_at')
         totalFee=0
         totalTechFee=0
         for x in orders:
@@ -82,7 +82,7 @@ def dashboard(request):
             todayfee = todayfee+o.fee
             todayTechFee = todayTechFee+o.tech_fee
         todaySubTotal=todayfee-todayTechFee
-        compOrdersThisMonth= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year)
+        compOrdersThisMonth= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed")
         compRevThisMonth=0
         compTechFeeThisMonth=0
         for j in compOrdersThisMonth:
@@ -185,9 +185,11 @@ def add_order(request):
 
 
 def update_status(request,pk):
-    
-    u=str(request.POST['updatedStatus'])
     thisOrder=Order.objects.get(id=pk)
+    if 'updatedStatus' in request.POST:
+        u=str(request.POST['updatedStatus'])
+    else:
+        u=thisOrder.status
     user=User.objects.get(id=request.session['user_id'])
     if thisOrder.status != u:
         thisOrder.status = request.POST['updatedStatus']
@@ -331,7 +333,7 @@ def sales_snapshot(request):
         year=datetime.now().year
         work_days=num_work_days(month,year)
         order_capacity={}
-        completed_orders= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed")
+        completed_orders= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed")
         working_orders=Order.objects.exclude(status="Completed").exclude(status="Cancelled")
         count_list={}
         client_list={}
@@ -371,7 +373,9 @@ def sales_snapshot(request):
         if len(completed_orders) ==0 and len(working_orders)==0:
             avg_fee=0
         else:
-            avg_fee = round(((total_billed-total_tech_fee)/len(completed_orders))+((open_rev-open_tech)/len(working_orders)), 2)
+            avg_fee = ((total_billed+open_rev) -(total_tech_fee+open_tech)) / (len(completed_orders)+len(working_orders))
+                
+        
         
         context={
             'completed_orders': completed_orders,
@@ -392,7 +396,7 @@ def sales_snapshot(request):
             'tech_fees': total_tech_fee+open_tech,
             'net_rev': (total_billed-total_tech_fee)+(open_rev-open_tech),
             'working_rev':open_rev-open_tech,
-            'avg_fee': avg_fee,
+            'avg_fee': round(avg_fee,2)
         }
         return render(request,'sales_snapshot.html',context)
     else:
@@ -422,7 +426,7 @@ def run_sales_report(request):
             year=int(request.POST['year_selected'])
             work_days=num_work_days(month,year)
             order_capacity={}
-            completed_orders= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed")
+            completed_orders= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed")
             comp_count= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed").count()
             count_list={}
             client_list={}
@@ -461,7 +465,7 @@ def run_sales_report(request):
                 avg_fee = round((total_billed-total_tech_fee)/comp_count, 2)
             
             context={
-                'completed_orders': Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed"),
+                'completed_orders': completed_orders,
                 'completed_count':comp_count,
                 'appraisers':Appraiser.objects.all(),
                 'clients':Client.objects.all(),
@@ -490,8 +494,8 @@ def sales_by_client(request,name,mnth,yr):
         month=mnth
         year=yr
         work_days=num_work_days(month,year)
-        completed_orders= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed").filter(client_ordered=client)
-        comp_count= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed").filter(client_ordered=client).count()
+        completed_orders= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed").filter(client_ordered=client)
+        comp_count= len(completed_orders)
         appraiser_list={}
         for j in completed_orders:
             total_billed += j.fee
@@ -541,7 +545,7 @@ def sales_by_appraiser(request,pk,mnth,yr):
         month=mnth
         year=yr
         work_days=num_work_days(month,year)
-        completed_orders= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed").filter(assigned_appraiser=appraiser)
+        completed_orders= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed").filter(assigned_appraiser=appraiser)
         comp_count= len(completed_orders)
         client_list={}
         for j in completed_orders:
@@ -600,10 +604,9 @@ def recap_today(request):
         new_order_list=Order.objects.filter_by_date_create(today_q).exclude(status="Cancelled")
         appraiser_list={}
         client_list={}
-        # client_list_new={}
         company_split=0
 
-        for app in Appraiser.objects.filter(status="Active").order_by('name'):
+        for app in Appraiser.objects.all().order_by('name'):
             if app.name in appraiser_list.keys():
                 pass
             else:
@@ -613,29 +616,13 @@ def recap_today(request):
                 appraiser_list.setdefault(app.name, {})['billed_rev']=0
                 appraiser_list.setdefault(app.name, {})['capacity']=app.capacity
 
-        # for cl in Client.objects.all().order_by('name'):
-        #     if cl.name in client_list.keys():
-        #         pass
-        #     else:
-        #         client_list.setdefault(cl.name, {})['new_orders']=0
-        #         client_list.setdefault(cl.name, {})['new_rev']=0
-        #         client_list.setdefault(cl.name, {})['completed']=0
-        #         client_list.setdefault(cl.name, {})['billed_rev']=0
-
         for order in new_order_list:
             if order.client_ordered.name in client_list.keys():
                 pass
-                # if client_list[order.client_ordered.name]['new_orders'] >= 0:
-                #     pass
-                # else:
-                #     client_list.setdefault(order.client_ordered.name, {})['new_orders']=0
-                # if client_list[order.client_ordered.name]['new_rev'] >= 0:
-                #     pass
-                # else:
-                #     client_list.setdefault(order.client_ordered.name, {})['new_rev']=0
             else:
                 client_list.setdefault(order.client_ordered.name, {})['new_orders']=0
                 client_list.setdefault(order.client_ordered.name, {})['new_rev']=0
+            
 
             client_list.setdefault(order.client_ordered.name, {})['new_orders']+=1
             client_list.setdefault(order.client_ordered.name, {})['new_rev']+=order.fee
@@ -656,11 +643,19 @@ def recap_today(request):
                     pass
                 else:
                     client_list.setdefault(o.client_ordered.name, {})['billed_rev']=0    
-                # print(client_list.items())
+                
             else:
-                # print(client_list.items())
                 client_list.setdefault(o.client_ordered.name, {})['completed']=0
                 client_list.setdefault(o.client_ordered.name, {})['billed_rev']=0
+
+            if o.assigned_appraiser.name in appraiser_list.keys():
+                pass
+            else:
+                appraiser_list.setdefault(o.assigned_appraiser.name, {})['completed']=0
+                appraiser_list.setdefault(o.assigned_appraiser.name, {})['billed_rev']=0
+                appraiser_list.setdefault(o.assigned_appraiser.name, {})['new_rev']=0
+                appraiser_list.setdefault(o.assigned_appraiser.name, {})['billed_rev']=0
+                appraiser_list.setdefault(o.assigned_appraiser.name, {})['capacity']=0
             
             client_list.setdefault(o.client_ordered.name, {})['completed']+=1
             client_list.setdefault(o.client_ordered.name, {})['billed_rev']+=o.fee
@@ -669,7 +664,7 @@ def recap_today(request):
             completed_tech+= o.tech_fee
             today_billed+= o.fee
             company_split += (o.fee-o.app_fee_split)
-        # print(today_billed, company_split)
+       
         if len(completed_orders) ==0:
             completed_avg_fee=0
         else:
@@ -685,7 +680,7 @@ def recap_today(request):
             'completed_count':len(completed_orders),
             'new_orders': new_order_list,
             'new_count':len(new_order_list),
-            'appraisers':Appraiser.objects.filter(status="Active"),
+            'appraisers':Appraiser.objects.all().order_by('name'),
             'clients':Client.objects.all(),
             'client_list':client_list,
             'appraiser_list':appraiser_list,

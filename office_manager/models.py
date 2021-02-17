@@ -168,7 +168,7 @@ class AppraiserManager(models.Manager):
             return (False, errors_list)
         elif parse_date(postData['license_exp']) <= date.today():
             errors_list.append('Please enter a license expiration date in the future.')
-        if postData['insurance_exp'] != "" :
+        if postData['insurance_exp'] == "" :
             errors_list.append('Please enter an insurance expiration date in the future.')
             return (False, errors_list)
         elif parse_date(postData['insurance_exp']) <= date.today() :
