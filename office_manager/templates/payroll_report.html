@@ -42,7 +42,7 @@
             <table class="align-left">
                 <tr>
                     <td class="statlead">Total Fee Split</td>
-                    <td>$ {{first_billed}}</td>
+                    <td>$ {{billed}}</td>
                 </tr>
                 <tr>
                     <td class="statlead">Gas Allowance:</td>
@@ -66,6 +66,8 @@
             <h2>Pay Period Activity</h2>
             <table class="payroll_display align-left">
                 <th>Order Date</th>
+                <th>Fee Total</th>
+                <th>Tech Fee</th>
                 <th>Fee Split</th>
                 <th>Address</th>
                 <th>Client</th>
@@ -73,14 +75,16 @@
                 <th>Appraiser</th>
                 <th>Status</th>
                 <th>Due Date</th>
-                <th>Completed On:</th>
+                <th>Completed:</th>
                 
                 {% for thisOrder in pay_period_completed%}
                    
                     <tr>
                         <td>{{thisOrder.created_at|date:"m/d/y"}}</td>
-                        <td>{{ thisOrder.app_fee_split|floatformat:2 }}</td>
-                        <td> {{thisOrder.address}}</td>
+                        <td>{{thisOrder.fee|floatformat:2 }}</td>
+                        <td>{{thisOrder.tech_fee|floatformat:2}}
+                        <td>{{thisOrder.fee_split_rate|floatformat:2}}</td>
+                        <td>{{thisOrder.address}}</td>
                         <td>{{thisOrder.client_ordered}}</td>
                         <td>{{thisOrder.product_type}}</td>
                         <td>{{thisOrder.assigned_appraiser}}</td>
