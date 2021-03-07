@@ -371,7 +371,9 @@ def sales_snapshot(request):
         if len(completed_orders) ==0 and len(working_orders)==0:
             avg_fee=0
         else:
-            avg_fee = round(((total_billed-total_tech_fee)/len(completed_orders))+((open_rev-open_tech)/len(working_orders)), 2)
+            
+        
+            avg_fee = ((total_billed + open_rev) - (total_tech_fee + open_tech)) / (len(completed_orders) + len(working_orders)) 
         
         context={
             'completed_orders': completed_orders,
