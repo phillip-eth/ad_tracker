@@ -67,7 +67,7 @@ def dashboard(request):
     if request.session['user_id'] != None:
         month=datetime.now().month
         year=datetime.now().year
-        orders= Order.objects.exclude(status="Cancelled").exclude(status="Completed").order_by('-created_at')
+        orders= Order.objects.exclude(status="Cancelled").exclude(status="Completed").order_by('status','due_date')
         totalFee=0
         totalTechFee=0
         for x in orders:
