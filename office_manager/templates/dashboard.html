@@ -80,7 +80,7 @@
                     
                     <input type="floatformat" name="tech_fee" id="newTechFee"  placeholder="Tech Fee">
                     <input type="text" name="address" id="newAddress" placeholder="Property Address">
-                    <select name="product_type" placeholder="Select Product">
+                    <select name="product_type" placeholder="Select Product" class="product-medium">
                     <option value="" disabled selected>Select Product</option>
                         {% for product in productList %}
                             <option value="{{product.id}}">{{product.FNMA_form}}, {{product.desc}} </option>
@@ -123,7 +123,7 @@
                             <td>{{thisOrder.created_at|date:"m/d/y"}}</td>
                             <td>{{thisOrder.fee}}</td>
                             <td class="align-center">{{thisOrder.tech_fee}}</td>
-                            <td class="list-address" ><a href="order_edit/{{thisOrder.id}}"> {{thisOrder.address}} </a></td>
+                            <td class="product-medium" ><a href="order_edit/{{thisOrder.id}}"> {{thisOrder.address}} </a></td>
                             <td class="product-short">{{thisOrder.client_ordered}}</td>
                             <td class="product-short">{{thisOrder.product_type}}</td>
                             <td>{{thisOrder.assigned_appraiser}}</td>

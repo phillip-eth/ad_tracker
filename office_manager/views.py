@@ -67,6 +67,8 @@ def dashboard(request):
     if request.session['user_id'] != None:
         month=datetime.now().month
         year=datetime.now().year
+        day=datetime.now().day
+        today=datetime.now().today()
         orders= Order.objects.exclude(status="Cancelled").exclude(status="Completed").order_by('status','due_date')
         totalFee=0
         totalTechFee=0
@@ -74,7 +76,6 @@ def dashboard(request):
             totalFee= totalFee+x.fee
             totalTechFee= totalTechFee+x.tech_fee
         subtotalFee=totalFee-totalTechFee
-        today=date.today()
         todayOrders=Order.objects.filter_by_date_create(today).exclude(status="Cancelled")
         todayTechFee=0
         todayfee=0
@@ -88,7 +89,7 @@ def dashboard(request):
         for j in compOrdersThisMonth:
             compRevThisMonth += j.fee
             compTechFeeThisMonth += j.tech_fee
-        completedOrdersToday=Order.objects.filter_by_date_complete(today).filter(status="Completed")
+        completedOrdersToday=Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(completed_date__day=day).filter(status="Completed")
         completedRevenue=0
         completedTechFee=0
         for i in completedOrdersToday:
@@ -304,7 +305,7 @@ def delete_appraiser(request,pk):
 def complete_order(request,pk):
     o=Order.objects.get(id=pk)
     o.status="Completed"
-    o.completed_date=date.today()
+    o.completed_date=datetime.today()
     o.save()
     return redirect("dashboard")
 
@@ -313,8 +314,8 @@ def sales(request):
         context={
             'months':Months,
             'years':Years,
-            'thisMonth': date.today().month,
-            'thisYear': date.today().year,
+            'thisMonth': datetime.now().month,
+            'thisYear': datetime.now().year,
        }
         
         return render(request,'sales_dashboard.html',context)
@@ -391,7 +392,7 @@ def sales_snapshot(request):
             'percent_complete':percent_complete,
             'client_list':client_list,
             'billed':total_billed-total_tech_fee,
-            'tech_fees': total_tech_fee+open_tech,
+            'tech_fees': round(total_tech_fee+open_tech,2),
             'net_rev': (total_billed-total_tech_fee)+(open_rev-open_tech),
             'working_rev':open_rev-open_tech,
             'avg_fee': round(avg_fee,2)
@@ -417,7 +418,7 @@ def run_sales_report(request):
                 messages.error(request,error)
             return redirect("sales")
         else:
-            appraisers=Appraiser.objects.all()
+            appraisers=Appraiser.objects.filter(status="Active")
             total_billed=0
             total_tech_fee=0
             month=int(request.POST['month_selected'])
@@ -425,14 +426,18 @@ def run_sales_report(request):
             work_days=num_work_days(month,year)
             order_capacity={}
             completed_orders= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed")
-            comp_count= Order.objects.filter(due_date__month=month).filter(due_date__year=year).filter(status="Completed").count()
+            comp_count= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed").count()
             count_list={}
+            count_list["Deleted Appraiser"]=0
             client_list={}
             percent_complete={}
             for j in completed_orders:
                 total_billed += j.fee
                 total_tech_fee += j.tech_fee
-                if j.assigned_appraiser.name in count_list.keys():
+                if j.assigned_appraiser == None:
+                    count_list['Deleted Appraiser'] +=1
+
+                elif j.assigned_appraiser.name in count_list.keys():
                     count_list[j.assigned_appraiser.name] +=1
                 else:
                       count_list[j.assigned_appraiser.name] =1
@@ -476,7 +481,7 @@ def run_sales_report(request):
                 'percent_complete':percent_complete,
                 'client_list':client_list,
                 'billed':total_billed,
-                'tech_fees': total_tech_fee,
+                'tech_fees': round(total_tech_fee,2),
                 'net_rev': total_billed-total_tech_fee,
                 'avg_fee': avg_fee,
             }
@@ -597,7 +602,7 @@ def recap_today(request):
         today_tech_fee=0
         today_billed=0
         completed_tech=0
-        today_q = date.today()
+        today_q = datetime.now().today()
         completed_orders=  Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(completed_date__day=day).filter(status="Completed")
         new_order_list=Order.objects.filter_by_date_create(today_q).exclude(status="Cancelled")
         appraiser_list={}
@@ -690,7 +695,7 @@ def recap_today(request):
             'new_net_rev': new_order_rev-today_tech_fee,
             'completed_avg_fee': completed_avg_fee,
             'new_avg_fee': new_avg_fee,
-            'company_split':company_split,
+            'company_split':round(company_split,2),
             'today':today_q,
         }
         return render(request,'recap_today.html',context)
@@ -796,8 +801,8 @@ def payroll(request):
         context={
             'months':Months,
             'years':Years,
-            'thisMonth': date.today().month,
-            'thisYear': date.today().year,
+            'thisMonth': datetime.now().month,
+            'thisYear': datetime.now().year,
             'appraisers':Appraiser.objects.all(),
        }
         
@@ -809,7 +814,7 @@ def payroll(request):
 def completed(request):
     if request.session['user_id'] != None:
         context={
-            'orders':Order.objects.filter(status="Completed").order_by('-due_date','-updated_at'),
+            'orders':Order.objects.filter(status="Completed").order_by('-completed_date','due_date'),
             'statusList':Progress_Status,
             'status':"Completed"
         }

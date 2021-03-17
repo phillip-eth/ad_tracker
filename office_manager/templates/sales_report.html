@@ -74,6 +74,20 @@
                         
                     </tr>
                 {%endfor%}
+                <tr> 
+                    
+                    {%for key, value in count_list.items %}
+                        {% if key == "Deleted Appraiser" %}
+                            {%if value > 0%}
+                                <td>Terminated Appraisers</td>
+                                <td>{{value}}</td>
+                                <td>N/A</td>
+                                <td>N/A</td>
+                            {%endif%}
+                        {%endif%}
+                    {%endfor%}
+                    
+                </tr>
             </table>
         </div>
         <div class="toptobottom">

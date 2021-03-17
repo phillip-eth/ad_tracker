@@ -5,7 +5,7 @@
     <h2>{{status}} Orders</h2>
 
 {%if orders != None %}
-    <div class="searchResults">
+    <div class="payroll_display align-left">
         <table>
             <th>Order Date</th>
             <th>Fee</th>
@@ -15,6 +15,7 @@
             <th>Product</th>
             <th>Appraiser</th>
             <th>Due Date</th>
+            <th>Completed Date</th>
             <th class="align-center">Status</th>
             <th>Actions</th>
             {% for result in orders %}
@@ -23,12 +24,13 @@
                     <td>{{result.created_at|date:"m/d/y"}}</td>
                     <td>{{result.fee}}</td>
                     <td>{{result.tech_fee}}</td>
-                    <td><a href="order_edit/{{result.id}}"> {{result.address}} </a></td>
-                    <td>{{result.client_ordered}}</td>
+                    <td class="product-short"><a href="order_edit/{{result.id}}"> {{result.address}} </a></td>
+                    <td class="product-short">{{result.client_ordered}}</td>
                     <td class="product-short">{{result.product_type.FNMA_form}}<br> {{result.product_type.desc}}</td>
                     <td>{{result.assigned_appraiser}}</td>
                     <td>{{result.due_date|date:"m/d/y"}}</td>
-                    <td class="align-right"><span>{{result.status}}</span>
+                    <td>{{result.completed_date|date:"m/d/y"}}</td>
+                    <td class="align-left"><span>{{result.status}}</span>
                         
                             <form id="update_status" name="update_status" action="update_status/{{result.id}}" method="post">
                                 {% csrf_token%}

@@ -404,7 +404,10 @@
     }
 
     .product-short{
-        width: 95px;
+        width: 105px;
+    }
+    .product-medium{
+        width: 130px;
     }
 
     #print-button{
