@@ -47,10 +47,12 @@ def search_order(request):
             context={
                 'orders':searchResult,
                 'statusList':Progress_Status,
+                'search_params':q
             }
         else:
             context={
-                'error': "No orders were located.  Please try again."
+                'error': "No orders were located.  Please try again.",
+                'search_params':q
             }
         return render(request,'search_results.html',context)
     else:
@@ -72,9 +74,16 @@ def dashboard(request):
         orders= Order.objects.exclude(status="Cancelled").exclude(status="Completed").order_by('status','due_date')
         totalFee=0
         totalTechFee=0
-        for x in orders:
-            totalFee= totalFee+x.fee
-            totalTechFee= totalTechFee+x.tech_fee
+        # count_list={}
+        # for app in Appraiser.objects.all().order_by('name'):
+        #     if app.name in count_list.keys():
+        #         pass
+        #     else:
+        #         count_list.setdefault(app.name, {})['working']=0
+        # for x in orders:
+        #     totalFee= totalFee+x.fee
+        #     totalTechFee= totalTechFee+x.tech_fee
+        #     count_list.setdefault(x.assigned_appraiser.name,{})['working'] +=1
         subtotalFee=totalFee-totalTechFee
         todayOrders=Order.objects.filter_by_date_create(today).exclude(status="Cancelled")
         todayTechFee=0
@@ -116,6 +125,7 @@ def dashboard(request):
             'clientList': Client.objects.all().order_by('name'),
             'productList': Product.objects.all().order_by('FNMA_form'),
             'statusList':Progress_Status,
+            # 'count_list':count_list
         }
         # print(context['statusList'])
         return render(request,'dashboard.html', context)
@@ -324,14 +334,15 @@ def sales(request):
 
 def sales_snapshot(request):
     if request.session['user_id'] != None:
-        
-    
+        projected_billing=0
+        projected_tech_fees=0
         open_rev=0
         open_tech=0
         total_billed=0
         total_tech_fee=0
         month=datetime.now().month
         year=datetime.now().year
+        month_total_order= Order.objects.filter(due_date__month=month).filter(due_date__year=year).exclude(status="Cancelled").exclude(status="On Hold")
         work_days=num_work_days(month,year)
         order_capacity={}
         completed_orders= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed")
@@ -375,6 +386,11 @@ def sales_snapshot(request):
             avg_fee=0
         else:
             avg_fee = ((total_billed+open_rev) -(total_tech_fee+open_tech)) / (len(completed_orders)+len(working_orders))
+
+        for app in month_total_order:
+                # print(app)
+                projected_billing += app.fee
+                projected_tech_fees += app.tech_fee
                 
         context={
             'completed_orders': completed_orders,
@@ -395,7 +411,8 @@ def sales_snapshot(request):
             'tech_fees': round(total_tech_fee+open_tech,2),
             'net_rev': (total_billed-total_tech_fee)+(open_rev-open_tech),
             'working_rev':open_rev-open_tech,
-            'avg_fee': round(avg_fee,2)
+            'avg_fee': round(avg_fee,2),
+            'monthly_billing': (total_billed+projected_billing)-(total_tech_fee+projected_tech_fees),
         }
         return render(request,'sales_snapshot.html',context)
     else:
@@ -446,6 +463,7 @@ def run_sales_report(request):
                     client_list[j.client_ordered.name] +=1
                 else:
                     client_list[j.client_ordered.name] =1
+            
             for a in appraisers:
                 order_capacity[a.name]= a.capacity * work_days
                 if a.name not in count_list.keys():
@@ -467,6 +485,7 @@ def run_sales_report(request):
             else:
                 avg_fee = round((total_billed-total_tech_fee)/comp_count, 2)
             
+            
             context={
                 'completed_orders': completed_orders,
                 'completed_count':comp_count,
@@ -484,6 +503,7 @@ def run_sales_report(request):
                 'tech_fees': round(total_tech_fee,2),
                 'net_rev': total_billed-total_tech_fee,
                 'avg_fee': avg_fee,
+                
             }
             return render(request,'sales_report.html',context)
     else:
@@ -588,6 +608,7 @@ def sales_by_appraiser(request,pk,mnth,yr):
             'tech_fees': total_tech_fee,
             'net_rev': total_billed-total_tech_fee,
             'avg_fee': avg_fee,
+            
         }
         return render(request,'appraiser_sales_report.html',context)
     else:
@@ -695,7 +716,7 @@ def recap_today(request):
             'new_net_rev': new_order_rev-today_tech_fee,
             'completed_avg_fee': completed_avg_fee,
             'new_avg_fee': new_avg_fee,
-            'company_split':round(company_split,2),
+            'company_split':round(((today_billed-completed_tech)*0.4),2),
             'today':today_q,
         }
         return render(request,'recap_today.html',context)

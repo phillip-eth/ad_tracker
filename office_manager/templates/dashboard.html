@@ -52,14 +52,27 @@
 
             </div>
             {%endif%}
-            <div class="search">
-                <h2>Search by Address</h2>
-                <form action="search_order" method="post">
-                    {% csrf_token %}
-                    <input type="text" name="search_address" placeholder="Search Property Address">
-                    <button type="submit">Search</button>
-                </form>
-            </div>
+            <!-- <div class="volume-tracker">
+                <h3>Appraiser Volume Tracker</h3>
+                <table>
+                    <th>Appraiser</th>
+                    <th>Open Orders</th>
+                    <th>Next Available Due Date</th>
+                    {% for a in appraiserList%}
+                        {%if a.name in count_list%}
+                            {%for key, value in count_list.items %}
+                                {% if key == a.name %}
+                                    <tr>
+                                        <td>{{a.name}}</td>
+                                        <td>{{value.working}}</td>
+                                    </tr>
+                                {%endif%}
+                            {%endfor%}
+                        {%endif%}
+                    {%endfor%}
+                </table>
+            </div> -->
+            
             <div class="errors">
                 {% if messages %}
                 <ul>
@@ -71,7 +84,7 @@
             </div>
             
             <div class="addOrder">
-                <h2>Add New Order</h2>
+                <h3>Add New Order</h3>
                 <form action="add_order" method="post" class="align-center">
                     {% csrf_token %}
                     
@@ -105,7 +118,7 @@
                 </form>    
             </div>
             <div class="display">
-                <h2>All Open Orders</h2>
+                <h3>All Open Orders</h3>
                 <table>
                     <th>Order Date</th>
                     <th>Fee</th>

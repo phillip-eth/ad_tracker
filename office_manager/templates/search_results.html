@@ -2,7 +2,7 @@
 {%block title%}<title>Search Results</title>{%endblock%}
 
 {%block content%}
-    <h2>Search Results</h2>
+    <h2>Search Results for:  "{{search_params}}"</h2>
 
 {%if orders != None %}
     <div class="searchResults">
@@ -14,21 +14,21 @@
             <th>Client</th>
             <th>Product</th>
             <th>Appraiser</th>
-            <th>Due Date</th>
-            <th>Status</th>
+            <th class="align-center">Due Date</th>
+            <th class="align-center">Status</th>
             <th>Actions</th>
             {% for result in orders %}
                 
                 <tr>
                     <td>{{result.created_at|date:"m/d/y"}}</td>
                     <td>{{result.fee}}</td>
-                    <td>{{result.tech_fee}}</td>
-                    <td><a href="order_edit/{{result.id}}"> {{result.address}} </a></td>
-                    <td>{{result.client_ordered}}</td>
-                    <td>{{result.product_type}}</td>
+                    <td class="align-center">{{result.tech_fee}}</td>
+                    <td class="product-medium"><a href="order_edit/{{result.id}}"> {{result.address}} </a></td>
+                    <td class="product-short">{{result.client_ordered}}</td>
+                    <td class="product-short">{{result.product_type}}</td>
                     <td>{{result.assigned_appraiser}}</td>
-                    <td>{{result.due_date|date:"m/d/y"}}</td>
-                    <td><form id="update_status" name="update_status" action="update_status/{{result.id}}" method="post">
+                    <td class="align-center">{{result.due_date|date:"m/d/y"}}</td>
+                    <td class="align-right"><form id="update_status" name="update_status" action="update_status/{{result.id}}" method="post">
                             {% csrf_token%}
                             <input type="hidden" name="orderID" value="{{result.id}}">
                             <select name="updatedStatus">

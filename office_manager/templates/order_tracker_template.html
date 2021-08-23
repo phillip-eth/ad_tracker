@@ -15,7 +15,7 @@
         <div class="header">
             <img src= "{% static './img/Appraisal-Den-Logos-1.png' %}" alt="Appraisal Den Logo" id="logo">
             <div class="sideheader">
-                <h2 id="site_title">Welcome Back, {{ request.session.username }} </h2>
+                <h3 id="site_title">Welcome Back, {{ request.session.username }} </h3>
                 <a id="logout" href="{% url 'logout' %}">Log Out</a>
         
             </div>
@@ -56,6 +56,13 @@
                 <a href="{% url 'sales' %}">Sales Report</a>
                                 
             {%endif%}
+            <div class="search_order">
+                <form action="search_order" method="post">
+                    {% csrf_token %}
+                    <input type="text" name="search_address" placeholder="Search Property Address">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
         </div>
         <div class="display">
             {% block content %}<!-- default content text -->{% endblock %}
