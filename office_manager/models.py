@@ -74,7 +74,8 @@ class OrderManager(models.Manager):
         product= Product.objects.get(id=postData['product_type'])
         print(appraiser,client,product)
         errors_list=[]
-        if len(postData['address']) < 5:
+        prop_address=postData['address'].strip()
+        if len(prop_address) < 5:
             errors_list.append('The address must be at least 5 characters long.')
         
         if len(postData['fee']) < 2:
@@ -104,7 +105,7 @@ class OrderManager(models.Manager):
                 fee = postData['fee'],
                 tech_fee=t_fee,
                 app_fee_split=round(fee_split,2),
-                address= postData['address'],
+                address= prop_address,
                 status = 'Add Order',
                 due_date = postData['due_date'],
                 adding_user =  User.objects.get(id=postData['user_id']),

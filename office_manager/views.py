@@ -38,7 +38,7 @@ def index(request):
     return render(request,'index.html')
 
 def search_order(request): 
-    q=request.POST['search_address']
+    q=request.POST['search_address'].strip()
     if q!="":
         searchResult=Order.objects.filter(address__icontains=q)
         if len(searchResult)>0: 
@@ -125,6 +125,7 @@ def dashboard(request):
             'clientList': Client.objects.all().order_by('name'),
             'productList': Product.objects.all().order_by('FNMA_form'),
             'statusList':Progress_Status,
+            'today':today,
             # 'count_list':count_list
         }
         # print(context['statusList'])
@@ -861,6 +862,18 @@ def cancelled(request):
             'orders':Order.objects.filter(status="Cancelled").order_by('-due_date','-updated_at'),
             'statusList':Progress_Status,
             'status':"Cancelled"
+        }
+        return render(request,'order-list.html',context)
+    else:
+        log_out(request)
+
+def past_due(request):
+    if request.session['user_id'] != None:
+        
+        context={
+            'orders':Order.objects.filter(due_date__lt=datetime.today()).exclude(status="Completed").exclude(status="Cancelled").order_by('-due_date','-updated_at'),
+            'statusList':Progress_Status,
+            'status':"Past Due"
         }
         return render(request,'order-list.html',context)
     else:

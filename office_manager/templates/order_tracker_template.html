@@ -32,6 +32,7 @@
                     <a href="{% url 'order_info_requested' %}">Info Requested</a>
                     <a href="{% url 'completed' %}">Completed</a>
                     <a href="{% url 'cancelled' %}">Cancelled</a>
+                    <a href="{% url 'past_due' %}">Past Due</a>
                 </div>
             </div>
             <div class="dropdown">
@@ -57,7 +58,7 @@
                                 
             {%endif%}
             <div class="search_order">
-                <form action="search_order" method="post">
+                <form action={% url 'search_order' %} method="post">
                     {% csrf_token %}
                     <input type="text" name="search_address" placeholder="Search Property Address">
                     <button type="submit">Search</button>

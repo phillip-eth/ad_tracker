@@ -10,6 +10,7 @@ urlpatterns = [
     path('complete_order/<int:pk>', views.complete_order, name='complete'),
     path('completed', views.completed, name='completed'),
     path('cancelled', views.cancelled, name='cancelled'),
+    path('past_due', views.past_due, name='past_due'),
     path('order_info_requested', views.order_info_requested, name='order_info_requested'),
     path('orders_hold', views.orders_hold, name='orders_hold'),
     path('orders_assigned', views.orders_assigned, name='orders_assigned'),

@@ -52,6 +52,27 @@
 
             </div>
             {%endif%}
+            {%if request.session.user_role == "regular"%}
+            <div class="stats" id="dash-stats">
+
+                <table>
+                    <tr>
+                        <td class="statlead"> Today's New Orders:</td>
+                        <td>{{todayOrder}}</td>
+                    </tr>
+                    <tr>
+                        <td class="statlead">Working Orders:</td>
+                        <td>{{orderCount}}</td>
+                    </tr>
+                    <tr>
+                        <td class="statlead">Orders Completed This Month:</td>
+                        <td>{{numOrdersCompleted}}</td>
+                    </tr>
+                    
+                </table>
+
+            </div>
+            {%endif%}
             <!-- <div class="volume-tracker">
                 <h3>Appraiser Volume Tracker</h3>
                 <table>
@@ -131,7 +152,6 @@
                     <th class="align-center">Status</th>
                     <th>Actions</th>
                     {% for thisOrder in orders%}
-                        {% if thisOrder.status != "Completed" or "Cancelled" %}
                         <tr>
                             <td>{{thisOrder.created_at|date:"m/d/y"}}</td>
                             <td>{{thisOrder.fee}}</td>
@@ -167,7 +187,7 @@
                                 {% endif %}
                             </td>
                         </tr>
-                        {%endif%}
+                        
 
                     {% endfor %}
                 </table>
