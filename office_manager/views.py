@@ -74,6 +74,7 @@ def dashboard(request):
         orders= Order.objects.exclude(status="Cancelled").exclude(status="Completed").order_by('status','due_date')
         totalFee=0
         totalTechFee=0
+        ordersToAdd=0
         # count_list={}
         # for app in Appraiser.objects.all().order_by('name'):
         #     if app.name in count_list.keys():
@@ -91,6 +92,11 @@ def dashboard(request):
         for o in todayOrders:
             todayfee = todayfee+o.fee
             todayTechFee = todayTechFee+o.tech_fee
+
+        for order in orders:
+            if order.status == "Add Order":
+                ordersToAdd +=1
+
         todaySubTotal=todayfee-todayTechFee
         compOrdersThisMonth= Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(status="Completed")
         compRevThisMonth=0
@@ -126,6 +132,7 @@ def dashboard(request):
             'productList': Product.objects.all().order_by('FNMA_form'),
             'statusList':Progress_Status,
             'today':today,
+            'ordersToAdd':ordersToAdd,
             # 'count_list':count_list
         }
         # print(context['statusList'])
