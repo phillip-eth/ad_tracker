@@ -382,6 +382,7 @@ def sales_snapshot(request):
             open_tech += a.tech_fee
             count_list.setdefault(a.assigned_appraiser.name,{})['working'] +=1
             client_list.setdefault(a.client_ordered.name,{})['working'] +=1
+
         for app in Appraiser.objects.all():
             percent_complete[app.name] =  round((count_list[app.name]['completed'] / order_capacity[app.name] * 100),2)
     
@@ -420,7 +421,7 @@ def sales_snapshot(request):
             'net_rev': (total_billed-total_tech_fee)+(open_rev-open_tech),
             'working_rev':open_rev-open_tech,
             'avg_fee': round(avg_fee,2),
-            'monthly_billing': (total_billed+projected_billing)-(total_tech_fee+projected_tech_fees),
+            'monthly_billing': (projected_billing)-(projected_tech_fees),
         }
         return render(request,'sales_snapshot.html',context)
     else:
