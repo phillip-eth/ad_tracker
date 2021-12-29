@@ -24,7 +24,7 @@ Months = {
     '11':'Nov',
     '12':'Dec',
 }
-Years = [2020,2021,2022,2023,2024,2025]
+Years = [2020,2021,2022,2023,2024,2025,2026,2027,2028,2029,2030]
 
 def num_work_days(month,year):
     thisYear = int(year)
@@ -72,9 +72,11 @@ def dashboard(request):
         day=datetime.now().day
         today=datetime.now().today()
         orders= Order.objects.exclude(status="Cancelled").exclude(status="Completed").order_by('status','due_date')
-        totalFee=0
-        totalTechFee=0
+        workingTotalFee=0
+        workingTotalTechFee=0
         ordersToAdd=0
+
+        #--Building an appraiser volume tracker
         # count_list={}
         # for app in Appraiser.objects.all().order_by('name'):
         #     if app.name in count_list.keys():
@@ -85,7 +87,8 @@ def dashboard(request):
         #     totalFee= totalFee+x.fee
         #     totalTechFee= totalTechFee+x.tech_fee
         #     count_list.setdefault(x.assigned_appraiser.name,{})['working'] +=1
-        subtotalFee=totalFee-totalTechFee
+
+        
         todayOrders=Order.objects.filter_by_date_create(today).exclude(status="Cancelled")
         todayTechFee=0
         todayfee=0
@@ -105,24 +108,31 @@ def dashboard(request):
             compRevThisMonth += j.fee
             compTechFeeThisMonth += j.tech_fee
         completedOrdersToday=Order.objects.filter(completed_date__month=month).filter(completed_date__year=year).filter(completed_date__day=day).filter(status="Completed")
+        
         completedRevenue=0
         completedTechFee=0
         for i in completedOrdersToday:
             completedRevenue += i.fee
             completedTechFee += i.tech_fee
-        compSubTotal=completedRevenue -  completedTechFee
-        if totalFee ==0:
-            avg_fee = 0
+        for n in orders:
+            workingTotalFee += n.fee
+            workingTotalTechFee += n.tech_fee
+
+        subtotalFee=workingTotalFee-workingTotalTechFee
+        if compRevThisMonth==0:
+            avg_fee = round(workingTotalFee/len(orders),2)
         else:
-            avg_fee= round(subtotalFee/len(orders),2)
-        netCombinedRevenue=(compRevThisMonth-compTechFeeThisMonth)+subtotalFee
+            avg_fee= (round(workingTotalFee/len(orders),2))+(round(completedRevenue/len(orders),2))
+        
+        compSubTotal=completedRevenue - completedTechFee
+        netCombinedRevenue=(compRevThisMonth-compTechFeeThisMonth)+ (workingTotalFee-workingTotalTechFee) + todaySubTotal
         context={
-            'subtotalFee':round(subtotalFee,2),
+            'subtotalFee':round(workingTotalFee,2),
             'compSub':round(compSubTotal,2),
             'todaySubTotal':round(todaySubTotal,2),
             'orderCount': len(orders),
             'todayOrder': len(todayOrders),
-            'techFees':round(totalTechFee,2),
+            'techFees':round(todayTechFee+workingTotalTechFee+completedTechFee,2),
             'feeAvg':avg_fee,
             'orders':orders,
             'numOrdersCompleted':len(compOrdersThisMonth),
@@ -334,6 +344,7 @@ def sales(request):
             'years':Years,
             'thisMonth': datetime.now().month,
             'thisYear': datetime.now().year,
+            'nextYear': datetime.now().year + 1,
        }
         
         return render(request,'sales_dashboard.html',context)
