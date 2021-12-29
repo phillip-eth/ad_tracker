@@ -16,7 +16,7 @@
             <select name="year_selected" id="year_selected" class="">
                 <option disabled selected>Choose Year</option>
                 {% for y in years %}
-                    {% if y <= thisYear %}
+                    {% if y <= nextYear %}
                         <option value="{{y}}">{{y}}</option>
                     {%endif%}
                 {% endfor %}

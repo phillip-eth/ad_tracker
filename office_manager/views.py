@@ -843,7 +843,7 @@ def payroll(request):
             'months':Months,
             'years':Years,
             'thisMonth': datetime.now().month,
-            'thisYear': datetime.now().year,
+            'nextYear': datetime.now().year +1,
             'appraisers':Appraiser.objects.all(),
        }
         
