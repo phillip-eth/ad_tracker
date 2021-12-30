@@ -783,10 +783,10 @@ def run_payroll_report(request):
             else:
                 st_month=str(month)
             if request.POST['payroll_period'] == '1':
-                pay_period = f"1st of {Months[st_month]}, {payroll_year}"
+                pay_period = f"1st of {Months[st_month]}, {year}"
                 period_completed=Order.objects.filter(completed_date__month=payroll_month).filter(completed_date__year=payroll_year).filter(completed_date__day__lt=16).filter(status="Completed").filter(assigned_appraiser = appraiser)
             else:
-                pay_period = f"15th of {Months[st_month]}, {payroll_year}"
+                pay_period = f"15th of {Months[st_month]}, {year}"
                 period_completed=Order.objects.filter(completed_date__month=payroll_month).filter(completed_date__year=payroll_year).filter(completed_date__day__gt=15).filter(status="Completed").filter(assigned_appraiser = appraiser)
 
             count_list=period_completed.count()
